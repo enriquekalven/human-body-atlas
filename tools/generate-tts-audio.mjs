@@ -1,14 +1,19 @@
 #!/usr/bin/env node
 /**
- * Generates studio-quality Chirp3-HD narration MP3s for the Human Body 3D Atlas
- * across English ('en'), Spanish ('es'), and Simplified Chinese ('zh'):
- *   - All 27 curated ANATOMY_PARTS entries (kids + pro)
- *   - All 37 TISSUE_INFO categories (kids + pro)
+ * Studio Chirp 3 HD Read Aloud Audio Generator & Verifier for Human Body 3D Atlas.
  *
- * Uses Google Cloud Text-to-Speech API v1 with Chirp3-HD Aoede voices.
- * Set GOOGLE_CLOUD_PROJECT in the environment before running.
+ * Scope:
+ *   - 8 languages: en, es, zh, ja, ko, pt, fr, it
+ *   - 128 keys per language (27 curated parts × kids/pro + 37 tissues × kids/pro) = 1,024 clips
+ *   - Single source of truth: imports buildSelectionNarration, VOICE_CONFIG, splitTextIntoByteChunks from ../src/narration.js
+ *   - Sentence-boundary UTF-8 byte chunking (<= 4,500 bytes per API call, concatenating MP3 buffers in order)
+ *   - Concurrency <= 4 with exponential backoff on HTTP 429 / 5xx and automatic token refresh
+ *   - Content-hash manifest per language: assets/audio/<lang>/manifest.json
+ *     mapping key -> { sha256, bytes, durationSec, chars }
+ *   - Incremental & resumable: skips clips whose on-disk MP3 is valid and matches sha256(voice + cleanedText)
  */
 
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -16,97 +21,76 @@ import { fileURLToPath } from 'node:url';
 
 import { ANATOMY_PARTS } from '../src/anatomyData.js';
 import { TISSUE_INFO } from '../src/content.js';
-import { getLocalizedPart, getLocalizedTissueInfo } from '../src/i18n.js';
+import { SUPPORTED_LANGS, getLocalizedPart, getLocalizedTissueInfo } from '../src/i18n.js';
+import {
+  VOICE_CONFIG,
+  buildSelectionNarration,
+  splitTextIntoByteChunks
+} from '../src/narration.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const AUDIO_ROOT = path.join(ROOT, 'assets', 'audio');
-const BILLING_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || '';
+const BILLING_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || 'project-maui';
+const CONCURRENCY = Math.min(4, Math.max(1, Number(process.env.TTS_CONCURRENCY || 4)));
 
-const VOICE_CONFIG = {
-  en: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Aoede' },
-  es: { languageCode: 'es-US', name: 'es-US-Chirp3-HD-Aoede' },
-  zh: { languageCode: 'cmn-CN', name: 'cmn-CN-Chirp3-HD-Aoede' }
-};
+let cachedToken = null;
+let cachedTokenTime = 0;
 
-function cleanForSpeech(text, lang) {
-  let s = String(text || '');
-  // Strip parenthetical FMA/TA98 codes
-  s = s.replace(/\((?:FMA|TA98)[^)]*\)/gi, '');
-  s = s.replace(/[—–]/g, ', ');
-
-  if (lang === 'es') {
-    s = s
-      .replace(/~/g, 'aproximadamente ')
-      .replace(/\bmmHg\b/g, 'milímetros de mercurio')
-      .replace(/\bmL\/min\b/g, 'mililitros por minuto')
-      .replace(/\bL\/min\b/g, 'litros por minuto')
-      .replace(/\bmL\/día\b/g, 'mililitros por día')
-      .replace(/\bmL\b/g, 'mililitros')
-      .replace(/\bm²\b/g, 'metros cuadrados')
-      .replace(/\blpm\b/g, 'latidos por minuto')
-      .replace(/\bNC\s+([IVX]+)/g, 'nervio craneal $1');
-  } else if (lang === 'zh') {
-    s = s
-      .replace(/~/g, '约 ')
-      .replace(/\bmmHg\b/g, '毫米汞柱')
-      .replace(/\bmL\/min\b/g, '毫升每分钟')
-      .replace(/\bL\/min\b/g, '升每分钟')
-      .replace(/\bmL\/d\b/g, '毫升每天')
-      .replace(/\bmL\b/g, '毫升')
-      .replace(/\bm²\b/g, '平方米')
-      .replace(/[，、；;：:\/（）()""“”‘’·]/g, '。')
-      .replace(/[！？!?]/g, '。')
-      .replace(/\.\s*/g, '。')
-      .replace(/\s+/g, '')
-      .replace(/。+/g, '。');
-    // Ensure no individual sentence exceeds 25 chars
-    s = s
-      .split('。')
-      .filter(Boolean)
-      .flatMap((seg) => {
-        if (seg.length <= 25) return [seg];
-        const chunks = [];
-        for (let i = 0; i < seg.length; i += 22) {
-          chunks.push(seg.slice(i, i + 22));
-        }
-        return chunks;
-      })
-      .join('。') + '。';
-  } else {
-    s = s
-      .replace(/~/g, 'about ')
-      .replace(/\bmmHg\b/g, 'millimeters of mercury')
-      .replace(/\bmL\/min\b/g, 'milliliters per minute')
-      .replace(/\bL\/min\b/g, 'liters per minute')
-      .replace(/\bmL\/day\b/g, 'milliliters per day')
-      .replace(/\bmL\b/g, 'milliliters')
-      .replace(/\bm²\b/g, 'square meters')
-      .replace(/\bbpm\b/g, 'beats per minute')
-      .replace(/\bCN\s+([IVX]+)/g, 'cranial nerve $1');
-  }
-  return s.replace(/\s{2,}/g, ' ').trim();
-}
-
-function getAccessToken() {
-  if (process.env.GCLOUD_ACCESS_TOKEN) {
+function getAccessToken(forceRefresh = false) {
+  if (process.env.GCLOUD_ACCESS_TOKEN && !forceRefresh) {
     return process.env.GCLOUD_ACCESS_TOKEN.trim();
   }
-  return execFileSync('gcloud', ['auth', 'print-access-token'], {
+  const now = Date.now();
+  if (!forceRefresh && cachedToken && now - cachedTokenTime < 25 * 60 * 1000) {
+    return cachedToken;
+  }
+  const envVal = process.env.CLOUDSDK_METRICS_ENVIRONMENT
+    ? `${process.env.CLOUDSDK_METRICS_ENVIRONMENT} datacloud.antigravity`
+    : 'datacloud.antigravity';
+  cachedToken = execFileSync('gcloud', ['auth', 'print-access-token'], {
     encoding: 'utf8',
     env: {
       ...process.env,
-      CLOUDSDK_METRICS_ENVIRONMENT: `${
-        process.env.CLOUDSDK_METRICS_ENVIRONMENT ? `${process.env.CLOUDSDK_METRICS_ENVIRONMENT} ` : ''
-      }datacloud.antigravity`
+      CLOUDSDK_METRICS_ENVIRONMENT: envVal
     }
   }).trim();
+  cachedTokenTime = now;
+  return cachedToken;
 }
 
-async function synthesizeMp3(text, lang, token, retries = 4) {
+export function computeClipHash(voiceName, cleanedText) {
+  return crypto
+    .createHash('sha256')
+    .update(`${voiceName}\n${cleanedText}`, 'utf8')
+    .digest('hex');
+}
+
+export function isValidMp3Buffer(buf) {
+  if (!buf || buf.length < 256) return false;
+  // Check for "ID3" header or MPEG frame sync (0xFF followed by 0xE0..0xFF)
+  if (buf[0] === 0x49 && buf[1] === 0x44 && buf[2] === 0x33) return true;
+  if (buf[0] === 0xff && (buf[1] & 0xe0) === 0xe0) return true;
+  return false;
+}
+
+export function probeDurationSec(filePath) {
+  try {
+    const out = execFileSync('afinfo', [filePath], { encoding: 'utf8' });
+    const m = out.match(/estimated duration:\s*([0-9.]+)\s*sec/i);
+    if (m) return Number(Number(m[1]).toFixed(3));
+  } catch (_e) {
+    // Fallback if afinfo fails
+  }
+  return 0;
+}
+
+async function synthesizeChunkMp3(textChunk, lang, maxRetries = 6) {
   const voice = VOICE_CONFIG[lang];
+  if (!voice) throw new Error(`Unsupported voice language: ${lang}`);
+
   const body = {
-    input: { text },
+    input: { text: textChunk },
     voice,
     audioConfig: {
       audioEncoding: 'MP3',
@@ -114,8 +98,9 @@ async function synthesizeMp3(text, lang, token, retries = 4) {
     }
   };
 
-  for (let attempt = 1; attempt <= retries; attempt++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      const token = getAccessToken(attempt > 1);
       const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
         method: 'POST',
         headers: {
@@ -125,108 +110,232 @@ async function synthesizeMp3(text, lang, token, retries = 4) {
         },
         body: JSON.stringify(body)
       });
+
       if (!res.ok) {
         const errText = await res.text();
-        throw new Error(`HTTP ${res.status}: ${errText.slice(0, 240)}`);
+        const status = res.status;
+        if (status === 429 || status >= 500 || status === 401) {
+          const delayMs = Math.min(15000, 750 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 400));
+          if (attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, delayMs));
+            continue;
+          }
+        }
+        throw new Error(`HTTP ${status} (${lang}): ${errText.slice(0, 280)}`);
       }
+
       const data = await res.json();
       if (!data.audioContent) {
-        throw new Error('Missing audioContent in TTS response');
+        throw new Error(`Missing audioContent in TTS response for ${lang}`);
       }
       return Buffer.from(data.audioContent, 'base64');
     } catch (err) {
-      if (attempt === retries) throw err;
-      await new Promise((r) => setTimeout(r, 600 * attempt));
+      if (attempt === maxRetries) throw err;
+      const delayMs = Math.min(15000, 750 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 400));
+      await new Promise((r) => setTimeout(r, delayMs));
     }
   }
 }
 
-async function fileExistsNonEmpty(filePath) {
+async function synthesizeFullClip(cleanedText, lang) {
+  const chunks = splitTextIntoByteChunks(cleanedText, lang, 4500);
+  const buffers = [];
+  for (const chunk of chunks) {
+    const buf = await synthesizeChunkMp3(chunk, lang);
+    buffers.push(buf);
+  }
+  return Buffer.concat(buffers);
+}
+
+async function loadManifest(manifestPath) {
   try {
-    const stat = await fs.stat(filePath);
-    return stat.size > 256;
+    const raw = await fs.readFile(manifestPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (_e) {
+    return {};
+  }
+}
+
+async function saveManifest(manifestPath, manifestObj) {
+  const sortedKeys = Object.keys(manifestObj).sort();
+  const ordered = {};
+  for (const k of sortedKeys) {
+    ordered[k] = manifestObj[k];
+  }
+  await fs.writeFile(manifestPath, `${JSON.stringify(ordered, null, 2)}\n`, 'utf8');
+}
+
+function buildLangTasks(lang) {
+  const voice = VOICE_CONFIG[lang];
+  const tasks = [];
+
+  // 1. All 27 curated ANATOMY_PARTS (kids + pro = 54 keys)
+  for (const rawPart of ANATOMY_PARTS) {
+    const localizedPart = getLocalizedPart(rawPart, lang);
+    for (const audience of ['kids', 'pro']) {
+      const { key, cleanedText } = buildSelectionNarration({
+        lang,
+        audience,
+        curatedPart: localizedPart
+      });
+      tasks.push({
+        lang,
+        key,
+        cleanedText,
+        chars: cleanedText.length,
+        sha256: computeClipHash(voice.name, cleanedText)
+      });
+    }
+  }
+
+  // 2. All 37 TISSUE_INFO categories (kids + pro = 74 keys)
+  for (const tissueKey of Object.keys(TISSUE_INFO)) {
+    const localizedTissue = getLocalizedTissueInfo(tissueKey, lang);
+    for (const audience of ['kids', 'pro']) {
+      const { key, cleanedText } = buildSelectionNarration({
+        lang,
+        audience,
+        curatedPart: null,
+        tissueKey,
+        tissueInfo: localizedTissue,
+        displayTitle: ''
+      });
+      tasks.push({
+        lang,
+        key,
+        cleanedText,
+        chars: cleanedText.length,
+        sha256: computeClipHash(voice.name, cleanedText)
+      });
+    }
+  }
+
+  return tasks;
+}
+
+async function isExistingClipReusable(mp3Path, existingEntry, expectedHash) {
+  if (!existingEntry || existingEntry.sha256 !== expectedHash) return false;
+  try {
+    const buf = await fs.readFile(mp3Path);
+    if (!isValidMp3Buffer(buf) || buf.length <= 8192) return false;
+    if (existingEntry.bytes !== buf.length) return false;
+    if (!existingEntry.durationSec || existingEntry.durationSec <= 0.5) return false;
+    return true;
   } catch (_e) {
     return false;
   }
 }
 
 async function main() {
-  const token = getAccessToken();
-  const tasks = [];
+  const filterLangs = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+  const targetLangs = filterLangs.length
+    ? SUPPORTED_LANGS.filter((l) => filterLangs.includes(l))
+    : SUPPORTED_LANGS;
 
-  for (const lang of ['en', 'es', 'zh']) {
+  const summaryByLang = {};
+  const allManifests = {};
+
+  for (const lang of targetLangs) {
     const langDir = path.join(AUDIO_ROOT, lang);
     await fs.mkdir(langDir, { recursive: true });
-    const sep = lang === 'zh' ? '。' : '. ';
+    const manifestPath = path.join(langDir, 'manifest.json');
+    const manifest = await loadManifest(manifestPath);
+    const tasks = buildLangTasks(lang);
 
-    // 1. All 27 curated ANATOMY_PARTS
-    for (const rawPart of ANATOMY_PARTS) {
-      const part = getLocalizedPart(rawPart, lang);
-      const kidsText = cleanForSpeech(
-        `${part.name}${sep}${part.kids.summary} ${part.kids.whyYouNeedIt}`,
-        lang
-      );
-      const proText = cleanForSpeech(
-        `${part.name}${sep}${part.pro.summary} ${part.pro.clinicalPearls}`,
-        lang
-      );
-      tasks.push({
-        lang,
-        outPath: path.join(langDir, `kids_${part.id}.mp3`),
-        text: kidsText
-      });
-      tasks.push({
-        lang,
-        outPath: path.join(langDir, `pro_${part.id}.mp3`),
-        text: proText
-      });
+    let generated = 0;
+    let skipped = 0;
+    let synthesizedChars = 0;
+    let totalChars = 0;
+    let cursor = 0;
+
+    console.log(
+      `[${lang}] Checking ${tasks.length} clips with voice ${VOICE_CONFIG[lang].name} (concurrency=${CONCURRENCY})...`
+    );
+
+    async function worker() {
+      while (cursor < tasks.length) {
+        const task = tasks[cursor++];
+        totalChars += task.chars;
+        const mp3Path = path.join(langDir, `${task.key}.mp3`);
+        const existing = manifest[task.key];
+
+        if (await isExistingClipReusable(mp3Path, existing, task.sha256)) {
+          skipped++;
+          continue;
+        }
+
+        const mp3Buf = await synthesizeFullClip(task.cleanedText, lang);
+        if (!isValidMp3Buffer(mp3Buf)) {
+          throw new Error(`Invalid MP3 header returned for ${lang}/${task.key}`);
+        }
+        await fs.writeFile(mp3Path, mp3Buf);
+        const durationSec = probeDurationSec(mp3Path);
+
+        manifest[task.key] = {
+          sha256: task.sha256,
+          bytes: mp3Buf.length,
+          durationSec
+        };
+        generated++;
+        synthesizedChars += task.chars;
+
+        if ((generated + skipped) % 16 === 0) {
+          await saveManifest(manifestPath, manifest);
+          console.log(
+            `  [${lang}] ${generated + skipped}/${tasks.length} processed (${generated} synthesized, ${skipped} cached)`
+          );
+        }
+      }
     }
 
-    // 2. All 37 TISSUE_INFO categories
-    for (const tissueKey of Object.keys(TISSUE_INFO)) {
-      const info = getLocalizedTissueInfo(tissueKey, lang);
-      tasks.push({
-        lang,
-        outPath: path.join(langDir, `kids_tissue_${tissueKey}.mp3`),
-        text: cleanForSpeech(info.kids, lang)
-      });
-      tasks.push({
-        lang,
-        outPath: path.join(langDir, `pro_tissue_${tissueKey}.mp3`),
-        text: cleanForSpeech(info.pro, lang)
-      });
+    await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+    await saveManifest(manifestPath, manifest);
+    allManifests[lang] = manifest;
+    summaryByLang[lang] = {
+      totalClips: tasks.length,
+      generatedClips: generated,
+      skippedClips: skipped,
+      synthesizedChars,
+      totalChars
+    };
+    console.log(
+      `[${lang}] Done: ${generated} synthesized (${synthesizedChars} chars), ${skipped} cached (${totalChars} total chars).`
+    );
+  }
+
+  // Load any manifests for languages not in targetLangs so src/audioManifests.js is always complete
+  for (const lang of SUPPORTED_LANGS) {
+    if (!allManifests[lang]) {
+      allManifests[lang] = await loadManifest(path.join(AUDIO_ROOT, lang, 'manifest.json'));
     }
   }
 
-  console.log(`Queued ${tasks.length} Chirp3-HD Studio MP3 synthesis tasks across en, es, zh...`);
-
-  const concurrency = 12;
-  let completed = 0;
-  let skipped = 0;
-  let index = 0;
-
-  async function worker() {
-    while (index < tasks.length) {
-      const current = tasks[index++];
-      if (await fileExistsNonEmpty(current.outPath)) {
-        skipped++;
-        completed++;
-        continue;
-      }
-      const mp3Buf = await synthesizeMp3(current.text, current.lang, token);
-      await fs.writeFile(current.outPath, mp3Buf);
-      completed++;
-      if (completed % 25 === 0 || completed === tasks.length) {
-        console.log(`Progress: ${completed}/${tasks.length} MP3s ready (${skipped} cached)`);
+  // Write compact runtime manifest index to src/audioManifests.js (maps lang -> key -> 8-char hash prefix)
+  const compactIndex = {};
+  for (const lang of SUPPORTED_LANGS) {
+    compactIndex[lang] = {};
+    const m = allManifests[lang] || {};
+    for (const [k, v] of Object.entries(m)) {
+      if (v && v.sha256) {
+        compactIndex[lang][k] = v.sha256.slice(0, 8);
       }
     }
   }
+  const indexModulePath = path.join(ROOT, 'src', 'audioManifests.js');
+  await fs.writeFile(
+    indexModulePath,
+    `/**\n * Auto-generated by tools/generate-tts-audio.mjs.\n * Maps language -> clip key -> first 8 chars of sha256(voice + cleanedText).\n */\nexport const AUDIO_MANIFEST_HASHES = ${JSON.stringify(compactIndex, null, 2)};\n`,
+    'utf8'
+  );
 
-  await Promise.all(Array.from({ length: concurrency }, () => worker()));
-  console.log(`Done! All ${tasks.length} Chirp3-HD Studio MP3 files are saved in assets/audio/{en,es,zh}/.`);
+  console.log('\n=== Generation Summary ===');
+  console.log(JSON.stringify(summaryByLang, null, 2));
 }
 
-main().catch((err) => {
-  console.error('TTS generation failed:', err);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error('TTS generation failed:', err);
+    process.exit(1);
+  });
+}

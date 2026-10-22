@@ -32,7 +32,8 @@ export const VERTEX_BODY = /* glsl */ `
 vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
 vSeed = fract(sin(dot(modelMatrix[3].xyz, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
 #ifdef TISSUE_FIBER
-vFiber = normalize(mat3(modelMatrix) * fiberDir);
+vec3 txRawFiber = mat3(modelMatrix) * fiberDir;
+vFiber = dot(txRawFiber, txRawFiber) > 1e-8 ? normalize(txRawFiber) : vec3(0.0, 1.0, 0.0);
 #endif
 `;
 
@@ -116,7 +117,7 @@ float tx_snoise(vec3 v) {
 // Muscle fascicles: fine across the fibre axis, long streaks along it. Three octaves
 // (fascicle bundles ~2.5 mm, fascicles ~0.7 mm, fibres ~0.3 mm), each faded by pixel footprint.
 float tx_fiber(vec3 p, vec3 dir, float foot) {
-  vec3 d = normalize(dir);
+  vec3 d = dot(dir, dir) > 1e-8 ? normalize(dir) : vec3(0.0, 1.0, 0.0);
   vec3 up = abs(d.y) < 0.95 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
   vec3 b1 = normalize(cross(d, up));
   vec3 b2 = cross(d, b1);

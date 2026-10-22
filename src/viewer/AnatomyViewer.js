@@ -124,12 +124,22 @@ async function fetchWithProgress(url, onBytes) {
   return out.buffer;
 }
 
+export function isMobileDevice() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia('(max-width: 860px), (pointer: coarse)').matches ||
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '')
+  );
+}
+
 export class AnatomyViewer extends EventTarget {
   constructor(canvas, options = {}) {
     super();
     this.canvas = canvas;
+    this.isMobile = isMobileDevice();
     this.baseUrl = options.baseUrl || './models/';
-    this.qualityName = options.quality && QUALITY[options.quality] ? options.quality : 'high';
+    const defaultQuality = this.isMobile ? 'balanced' : 'high';
+    this.qualityName = options.quality && QUALITY[options.quality] ? options.quality : defaultQuality;
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -205,7 +215,8 @@ export class AnatomyViewer extends EventTarget {
     key.position.set(1.7, 3.3, 2.6);
     key.target.position.set(0, 0.9, 0);
     key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048);
+    const shadowRes = this.isMobile ? 1024 : 2048;
+    key.shadow.mapSize.set(shadowRes, shadowRes);
     Object.assign(key.shadow.camera, { left: -0.85, right: 0.85, top: 1.15, bottom: -1.15, near: 0.5, far: 9 });
     key.shadow.bias = -0.00025;
     key.shadow.normalBias = 0.01;
@@ -262,7 +273,10 @@ export class AnatomyViewer extends EventTarget {
   }
 
   _buildComposer() {
-    const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 });
+    const rt = new THREE.WebGLRenderTarget(4, 4, {
+      type: THREE.HalfFloatType,
+      samples: this.isMobile ? 0 : 4
+    });
     this.composer = new EffectComposer(this.renderer, rt);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.gtaoPass = new AnatomyGTAOPass(this.scene, this.camera, 4, 4);
@@ -277,7 +291,7 @@ export class AnatomyViewer extends EventTarget {
   // --------------------------------------------------------------------------
   // Loading
   // --------------------------------------------------------------------------
-  async load({ onProgress } = {}) {
+  async load({ onProgress, onInitialReady } = {}) {
     const res = await fetch(`${this.baseUrl}manifest.json`, { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`Failed to load manifest (${res.status})`);
     this.manifest = await res.json();
@@ -289,6 +303,9 @@ export class AnatomyViewer extends EventTarget {
     let loadedBytes = 0;
     const loader = new GLTFLoader();
     const order = [...LOAD_ORDER].sort((a, b) => this._layerPriority(a) - this._layerPriority(b));
+    const visibleLayers = order.filter((id) => (this.layerOpacity[id] ?? 0) > 0.01);
+    const initialTargetCount = Math.max(1, Math.min(2, visibleLayers.length || 2));
+    let initialReadyFired = false;
 
     for (const layerId of order) {
       const info = this.manifest.layers.find((l) => l.id === layerId);
@@ -302,11 +319,26 @@ export class AnatomyViewer extends EventTarget {
       this.loadedLayers.add(layerId);
       this._applyLayerOpacity();
       this.dispatchEvent(new CustomEvent('layerloaded', { detail: { layer: layerId, loaded: [...this.loadedLayers] } }));
+
+      if (!initialReadyFired && this.loadedLayers.size >= initialTargetCount) {
+        initialReadyFired = true;
+        if (onInitialReady) onInitialReady(this.manifest);
+        this.dispatchEvent(new CustomEvent('initialready', { detail: this.manifest }));
+      }
+      // Yield to browser event loop between layers so WebGL renders smoothly and UI stays responsive
+      await new Promise((r) => setTimeout(r, 16));
     }
-    try {
-      await this.renderer.compileAsync(this.scene, this.camera);
-    } catch {
-      // compileAsync is an optimisation only; rendering compiles lazily otherwise.
+    if (!initialReadyFired) {
+      initialReadyFired = true;
+      if (onInitialReady) onInitialReady(this.manifest);
+      this.dispatchEvent(new CustomEvent('initialready', { detail: this.manifest }));
+    }
+    if (!this.isMobile) {
+      try {
+        await this.renderer.compileAsync(this.scene, this.camera);
+      } catch {
+        // compileAsync is an optimisation only; rendering compiles lazily otherwise.
+      }
     }
     this.dispatchEvent(new CustomEvent('ready'));
   }
@@ -375,7 +407,7 @@ export class AnatomyViewer extends EventTarget {
       mesh.userData.layerKey = layerKey;
       mesh.castShadow = layerId !== 'vessels' && layerId !== 'nerves' && tissue !== 'lip';
       mesh.receiveShadow = tissue !== 'lip';
-      if (entry.def.fiber) this._addFiberAttribute(mesh);
+      if (entry.def.fiber && !this.isMobile && this.quality?.detail) this._addFiberAttribute(mesh);
 
       let parent = this.groups[layerKey];
       if (layerKey === 'heart') parent = this.pivots.heart;
@@ -1055,6 +1087,9 @@ export class AnatomyViewer extends EventTarget {
     this.controls.addEventListener('start', () => {
       this.tween = null;
     });
+    this.canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+    });
   }
 
   resize() {
@@ -1063,8 +1098,12 @@ export class AnatomyViewer extends EventTarget {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h, false);
-    this.composer.setPixelRatio(this.renderer.getPixelRatio());
-    this.composer.setSize(w, h);
+    if (this.quality && this.quality.ao) {
+      this.composer.setPixelRatio(this.renderer.getPixelRatio());
+      this.composer.setSize(w, h);
+    } else {
+      this.composer.setSize(4, 4);
+    }
   }
 
   start() {
@@ -1077,10 +1116,13 @@ export class AnatomyViewer extends EventTarget {
       this._updateTween(dt);
       this.controls.update();
       this._updatePhysiology(dt);
-      const dist = this.camera.position.distanceTo(this.controls.target);
-      this.gtaoPass.updateGtaoMaterial({ radius: THREE.MathUtils.clamp(dist * 0.045, 0.006, 0.09) });
-      if (this.quality.ao || this.quality.shadows) this.composer.render(dt);
-      else this.renderer.render(this.scene, this.camera);
+      if (this.quality.ao) {
+        const dist = this.camera.position.distanceTo(this.controls.target);
+        this.gtaoPass.updateGtaoMaterial({ radius: THREE.MathUtils.clamp(dist * 0.045, 0.006, 0.09) });
+        this.composer.render(dt);
+      } else {
+        this.renderer.render(this.scene, this.camera);
+      }
       this._monitorPerformance(dt);
       this.dispatchEvent(new CustomEvent('frame'));
     };

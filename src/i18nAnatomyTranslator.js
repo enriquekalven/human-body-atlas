@@ -9,6 +9,8 @@
  *   - Trilingual search bar (type in English, Spanish, or Chinese)
  */
 
+import { translateExtraLang, EXTRA_MULTILINGUAL_SYNONYMS } from './i18nAnatomyTranslatorExtra.js';
+
 // Direct exact-match dictionary (lowercase key -> { es, zh })
 const EXACT_NAMES = {
   // Skin & surface
@@ -787,7 +789,12 @@ const WORD_MAP_ZH = {
 
 const translationCache = {
   es: new Map(),
-  zh: new Map()
+  zh: new Map(),
+  ja: new Map(),
+  ko: new Map(),
+  pt: new Map(),
+  fr: new Map(),
+  it: new Map()
 };
 
 function capFirst(s) {
@@ -796,7 +803,7 @@ function capFirst(s) {
 }
 
 /**
- * Translate any anatomical structure or group name from English into `en`, `es`, or `zh`.
+ * Translate any anatomical structure or group name from English into `en`, `es`, `zh`, `ja`, `ko`, `pt`, `fr`, or `it`.
  */
 export function translateAnatomyName(englishName, lang = 'en') {
   if (!englishName || lang === 'en') return englishName || '';
@@ -815,6 +822,8 @@ export function translateAnatomyName(englishName, lang = 'en') {
     out = translateToSpanish(lower, englishName);
   } else if (lang === 'zh') {
     out = translateToChinese(lower, englishName);
+  } else if (lang === 'ja' || lang === 'ko' || lang === 'pt' || lang === 'fr' || lang === 'it') {
+    out = translateExtraLang(lower, englishName, lang);
   } else {
     out = englishName;
   }
@@ -1222,5 +1231,6 @@ export const MULTILINGUAL_SYNONYMS = {
   '桡神经': 'radial nerve',
   '股神经': 'femoral nerve',
   '视神经': 'optic nerve',
-  '神经': 'nerve'
+  '神经': 'nerve',
+  ...EXTRA_MULTILINGUAL_SYNONYMS
 };

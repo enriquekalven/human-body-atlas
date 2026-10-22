@@ -5,7 +5,7 @@
  * No innerHTML, no inline handlers, no eval — compatible with the strict CSP in index.html/server.py.
  */
 
-import { AnatomyViewer, LAYER_IDS, VIEW_PRESETS } from './viewer/AnatomyViewer.js';
+import { AnatomyViewer, LAYER_IDS, VIEW_PRESETS, isMobileDevice } from './viewer/AnatomyViewer.js';
 import { ANATOMY_PARTS } from './anatomyData.js';
 import { buildSearchIndex, searchAnatomy, resolveCuratedMembers, layerLabel } from './content.js';
 import { SKIN_TONES } from './viewer/materials.js';
@@ -21,6 +21,7 @@ import {
   trackLanguageSwitch
 } from './analytics.js';
 import {
+  SUPPORTED_LANGS,
   normalizeLang,
   getUiStrings,
   getLocalizedPart,
@@ -30,6 +31,17 @@ import {
 } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
+
+const BCP_47_BY_LANG = {
+  en: 'en-US',
+  es: 'es-ES',
+  zh: 'zh-CN',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  pt: 'pt-BR',
+  fr: 'fr-FR',
+  it: 'it-IT'
+};
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -54,6 +66,8 @@ class AtlasApp {
     this.currentViewId = 'muscles';
     this.isSpeaking = false;
     this.currentAudio = null;
+    this.inspectorMinimized = false;
+    this.mobileLayersOpen = false;
 
     if ('speechSynthesis' in window) {
       // Pre-warm browser voice list asynchronously
@@ -65,7 +79,8 @@ class AtlasApp {
       }
     }
 
-    const quality = this.params.get('quality') || (window.matchMedia('(max-width: 768px)').matches ? 'balanced' : 'high');
+    const isMobile = isMobileDevice() || window.matchMedia('(max-width: 860px)').matches;
+    const quality = this.params.get('quality') || (isMobile ? 'balanced' : 'high');
     this.viewer = new AnatomyViewer($('anatomy-canvas'), {
       quality,
       autoQuality: !this.params.get('quality'),
@@ -80,6 +95,7 @@ class AtlasApp {
     this._renderSkinTones();
     this._bindUi();
     this._bindCanvas();
+    this._syncHeaderHeightObserver();
     this._syncAudienceButtons();
     this._syncSexButtons();
     this._syncLanguageButtons();
@@ -123,7 +139,46 @@ class AtlasApp {
     return translateAnatomyName(englishName, this.lang);
   }
 
+  _updateHeaderHeightVar() {
+    const header = document.querySelector('.hud-header');
+    if (!header) return;
+    const h = Math.ceil(header.getBoundingClientRect().height);
+    if (h > 0) {
+      document.documentElement.style.setProperty('--header-h', `${h}px`);
+    }
+  }
+
+  _syncHeaderHeightObserver() {
+    const header = document.querySelector('.hud-header');
+    if (!header) return;
+    this._updateHeaderHeightVar();
+    if (typeof ResizeObserver === 'function') {
+      this._headerRo = new ResizeObserver(() => this._updateHeaderHeightVar());
+      this._headerRo.observe(header);
+    }
+    window.addEventListener('resize', () => this._updateHeaderHeightVar(), { passive: true });
+  }
+
+  _initManifestIndices() {
+    if (this.manifest) return;
+    this.manifest = this.viewer.manifest;
+    this.searchIndex = buildSearchIndex(this.manifest);
+    this.curatedMembers = resolveCuratedMembers(this.manifest, ANATOMY_PARTS);
+    this._buildPartToGroups();
+  }
+
   async _load() {
+    let initialDismissed = false;
+    const dismissOverlay = () => {
+      if (initialDismissed) return;
+      initialDismissed = true;
+      this._initManifestIndices();
+      $('loading-overlay').classList.add('done');
+      setTimeout(() => $('loading-overlay').classList.add('hidden'), 650);
+      const q = this.params.get('q');
+      if (q) this._runSearchSelect(q);
+    };
+
     try {
       await this.viewer.load({
         onProgress: ({ loadedBytes, totalBytes, layer }) => {
@@ -137,6 +192,9 @@ class AtlasApp {
           );
           const layerName = ui.layerNames[layer] || layer;
           $('loading-sub').textContent = ui.loadingLayer(layerName);
+        },
+        onInitialReady: () => {
+          dismissOverlay();
         }
       });
     } catch (err) {
@@ -144,15 +202,7 @@ class AtlasApp {
       this._showError(this._ui().errorLoadModels);
       return;
     }
-    this.manifest = this.viewer.manifest;
-    this.searchIndex = buildSearchIndex(this.manifest);
-    this.curatedMembers = resolveCuratedMembers(this.manifest, ANATOMY_PARTS);
-    this._buildPartToGroups();
-    $('loading-overlay').classList.add('done');
-    setTimeout(() => $('loading-overlay').classList.add('hidden'), 700);
-
-    const q = this.params.get('q');
-    if (q) this._runSearchSelect(q);
+    dismissOverlay();
     this.readyFrames = 0;
   }
 
@@ -293,7 +343,7 @@ class AtlasApp {
   }
 
   _syncLanguageButtons() {
-    for (const code of ['en', 'es', 'zh']) {
+    for (const code of SUPPORTED_LANGS) {
       const btn = $(`btn-lang-${code}`);
       if (!btn) continue;
       const active = this.lang === code;
@@ -323,6 +373,12 @@ class AtlasApp {
     $('btn-pro').textContent = ui.pro;
     if ($('lang-group')) $('lang-group').setAttribute('aria-label', ui.langGroupAria);
     $('btn-quiz').textContent = ui.quizBtn;
+    if ($('btn-mobile-layers')) {
+      $('btn-mobile-layers').textContent = ui.mobileLayersBtn;
+      $('btn-mobile-layers').setAttribute('aria-label', ui.mobileLayersAria);
+    }
+    if ($('mobile-drawer-title')) $('mobile-drawer-title').textContent = ui.mobileDrawerTitle;
+    if ($('btn-close-left-panel')) $('btn-close-left-panel').setAttribute('aria-label', ui.closeControlsAria);
     $('view-bar').setAttribute('aria-label', ui.viewBarAria);
 
     // Update view preset button labels
@@ -383,6 +439,7 @@ class AtlasApp {
     }
 
     this._syncSpeakButton();
+    this._syncInspectorToggleBtn();
     $('btn-zoom-part').textContent = ui.zoomPartBtn;
     $('btn-isolate-part').textContent = this.viewer.isolated ? ui.showAllBtn : ui.isolatePartBtn;
     $('btn-clear').textContent = ui.clearBtn;
@@ -394,6 +451,39 @@ class AtlasApp {
     $('quiz-title').textContent = ui.quizTitle;
     $('btn-quiz-close').textContent = ui.quizCloseBtn;
     $('btn-quiz-close').setAttribute('aria-label', ui.quizCloseAria);
+
+    this._updateHeaderHeightVar();
+  }
+
+  _setMobileLayersOpen(open) {
+    this.mobileLayersOpen = !!open;
+    document.body.classList.toggle('mobile-layers-open', this.mobileLayersOpen);
+    const btn = $('btn-mobile-layers');
+    if (btn) {
+      btn.classList.toggle('is-active', this.mobileLayersOpen);
+      btn.setAttribute('aria-expanded', String(this.mobileLayersOpen));
+    }
+  }
+
+  _setInspectorMinimized(minimized) {
+    this.inspectorMinimized = !!minimized;
+    const panel = $('inspector-panel');
+    if (panel) {
+      panel.classList.toggle('is-minimized', this.inspectorMinimized);
+    }
+    this._syncInspectorToggleBtn();
+  }
+
+  _syncInspectorToggleBtn() {
+    const btn = $('btn-inspector-toggle');
+    if (!btn) return;
+    const ui = this._ui();
+    btn.textContent = this.inspectorMinimized ? '▲' : '▼';
+    btn.setAttribute('aria-expanded', String(!this.inspectorMinimized));
+    btn.setAttribute(
+      'aria-label',
+      this.inspectorMinimized ? ui.expandInspectorAria : ui.minimizeInspectorAria
+    );
   }
 
   // --------------------------------------------------------------------------
@@ -406,15 +496,39 @@ class AtlasApp {
     search.addEventListener('keydown', (e) => this._onSearchKey(e));
     document.addEventListener('pointerdown', (e) => {
       if (!e.target.closest('.search')) this._hideSearch();
+      if (
+        this.mobileLayersOpen &&
+        !e.target.closest('#left-panel') &&
+        !e.target.closest('#btn-mobile-layers')
+      ) {
+        this._setMobileLayersOpen(false);
+      }
     });
 
     $('btn-female').addEventListener('click', () => this._setSex('female'));
     $('btn-male').addEventListener('click', () => this._setSex('male'));
     $('btn-kids').addEventListener('click', () => this._setAudience('kids'));
     $('btn-pro').addEventListener('click', () => this._setAudience('pro'));
-    if ($('btn-lang-en')) $('btn-lang-en').addEventListener('click', () => this._setLanguage('en'));
-    if ($('btn-lang-es')) $('btn-lang-es').addEventListener('click', () => this._setLanguage('es'));
-    if ($('btn-lang-zh')) $('btn-lang-zh').addEventListener('click', () => this._setLanguage('zh'));
+    for (const code of SUPPORTED_LANGS) {
+      const btn = $(`btn-lang-${code}`);
+      if (btn) btn.addEventListener('click', () => this._setLanguage(code));
+    }
+
+    if ($('btn-mobile-layers')) {
+      $('btn-mobile-layers').addEventListener('click', () => {
+        this._setMobileLayersOpen(!this.mobileLayersOpen);
+      });
+    }
+    if ($('btn-close-left-panel')) {
+      $('btn-close-left-panel').addEventListener('click', () => {
+        this._setMobileLayersOpen(false);
+      });
+    }
+    if ($('btn-inspector-toggle')) {
+      $('btn-inspector-toggle').addEventListener('click', () => {
+        this._setInspectorMinimized(!this.inspectorMinimized);
+      });
+    }
 
     const hr = $('heart-rate');
     hr.addEventListener('input', () => {
@@ -552,12 +666,13 @@ class AtlasApp {
     let lastHover = 0;
 
     canvas.addEventListener('pointerdown', (e) => {
-      downAt = { x: e.clientX, y: e.clientY, t: performance.now() };
+      downAt = { x: e.clientX, y: e.clientY, t: performance.now(), pointerType: e.pointerType };
     });
     canvas.addEventListener('pointerup', (e) => {
       if (!downAt || !this.manifest) return;
       const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
-      if (moved < 6 && e.button === 0) {
+      const maxMove = e.pointerType === 'touch' || downAt.pointerType === 'touch' ? 14 : 6;
+      if (moved < maxMove && (e.button === 0 || e.pointerType === 'touch')) {
         const hit = this.viewer.pickAt(e.clientX, e.clientY);
         if (hit) this.selectPart(hit.object.userData.partIndex);
       }
@@ -632,7 +747,7 @@ class AtlasApp {
       li.setAttribute('role', 'option');
       li.setAttribute('aria-selected', 'false');
       const displayName =
-        this.lang === 'es' ? r.nameEs || this._displayName(r.name) : this.lang === 'zh' ? r.nameZh || this._displayName(r.name) : r.name;
+        (r.namesByLang && r.namesByLang[this.lang]) || this._displayName(r.name);
       const name = el('span', 'search-name', displayName);
       const meta = el(
         'span',
@@ -671,7 +786,7 @@ class AtlasApp {
   _chooseSearchResult(r) {
     const rawQuery = $('search-input').value;
     const displayName =
-      this.lang === 'es' ? r.nameEs || this._displayName(r.name) : this.lang === 'zh' ? r.nameZh || this._displayName(r.name) : r.name;
+      (r.namesByLang && r.namesByLang[this.lang]) || this._displayName(r.name);
     $('search-input').value = displayName;
     this._hideSearch();
     $('search-input').blur();
@@ -763,6 +878,9 @@ class AtlasApp {
     for (const layer of layers) this.viewer.ensureLayerVisible(layer);
     sel.curated = sel.curated || this._curatedFor(sel.indices);
     this.selection = sel;
+    document.body.classList.add('has-selection');
+    this._setMobileLayersOpen(false);
+    this._setInspectorMinimized(false);
     this.viewer.setSelection(sel.indices);
     this.viewer.frameParts(sel.indices);
     trackSelectPart({
@@ -779,6 +897,8 @@ class AtlasApp {
   clearSelection() {
     this._stopSpeech();
     this.selection = null;
+    document.body.classList.remove('has-selection');
+    this._setInspectorMinimized(false);
     this.viewer.setSelection([]);
     this.viewer.setIsolation(false);
     $('btn-isolate').classList.remove('is-on');
@@ -1003,13 +1123,19 @@ class AtlasApp {
       text += this.audience === 'kids' ? info.kids : info.pro;
     }
 
-    // Studio Chirp3-HD MP3 path for curated parts and tissue categories
+    this.isSpeaking = true;
+    this._syncSpeakButton();
+
+    // Pre-rendered Chirp3-HD Studio MP3s exist for en, es, zh; other languages use Neural Browser TTS directly
+    const hasStudioAudio = ['en', 'es', 'zh'].includes(this.lang);
+    if (!hasStudioAudio) {
+      this._speakWithBrowserTTS(text);
+      return;
+    }
+
     const studioFile = curated
       ? `./assets/audio/${this.lang}/${this.audience}_${curated.id}.mp3`
       : `./assets/audio/${this.lang}/${this.audience}_tissue_${tissue}.mp3`;
-
-    this.isSpeaking = true;
-    this._syncSpeakButton();
 
     const audio = new Audio(studioFile);
     this.currentAudio = audio;
@@ -1068,7 +1194,7 @@ class AtlasApp {
       u.voice = bestVoice;
       u.lang = bestVoice.lang;
     } else {
-      u.lang = this.lang === 'es' ? 'es-ES' : this.lang === 'zh' ? 'zh-CN' : 'en-US';
+      u.lang = BCP_47_BY_LANG[this.lang] || 'en-US';
     }
     u.rate = this.audience === 'kids' ? 0.96 : 0.98;
     u.pitch = 1.0;
@@ -1103,6 +1229,49 @@ class AtlasApp {
         .replace(/\bmL\/d\b/g, '毫升每天')
         .replace(/\bmL\b/g, '毫升')
         .replace(/\bm²\b/g, '平方米');
+    } else if (lang === 'ja') {
+      s = s
+        .replace(/~/g, '約 ')
+        .replace(/\bmmHg\b/g, 'ミリメートル水銀柱')
+        .replace(/\bmL\/min\b/g, 'ミリリットル毎分')
+        .replace(/\bL\/min\b/g, 'リットル毎分')
+        .replace(/\bmL\b/g, 'ミリリットル')
+        .replace(/\bm²\b/g, '平方メートル');
+    } else if (lang === 'ko') {
+      s = s
+        .replace(/~/g, '약 ')
+        .replace(/\bmmHg\b/g, '밀리미터 수은주')
+        .replace(/\bmL\/min\b/g, '분당 밀리리터')
+        .replace(/\bL\/min\b/g, '분당 리터')
+        .replace(/\bmL\b/g, '밀리리터')
+        .replace(/\bm²\b/g, '제곱미터');
+    } else if (lang === 'pt') {
+      s = s
+        .replace(/~/g, 'aproximadamente ')
+        .replace(/\bmmHg\b/g, 'milímetros de mercúrio')
+        .replace(/\bmL\/min\b/g, 'mililitros por minuto')
+        .replace(/\bL\/min\b/g, 'litros por minuto')
+        .replace(/\bmL\b/g, 'mililitros')
+        .replace(/\bm²\b/g, 'metros quadrados')
+        .replace(/\bbpm\b/g, 'batimentos por minuto');
+    } else if (lang === 'fr') {
+      s = s
+        .replace(/~/g, 'environ ')
+        .replace(/\bmmHg\b/g, 'millimètres de mercure')
+        .replace(/\bmL\/min\b/g, 'millilitres par minute')
+        .replace(/\bL\/min\b/g, 'litres par minute')
+        .replace(/\bmL\b/g, 'millilitres')
+        .replace(/\bm²\b/g, 'mètres carrés')
+        .replace(/\bbpm\b/g, 'battements par minute');
+    } else if (lang === 'it') {
+      s = s
+        .replace(/~/g, 'circa ')
+        .replace(/\bmmHg\b/g, 'millimetri di mercurio')
+        .replace(/\bmL\/min\b/g, 'millilitri al minuto')
+        .replace(/\bL\/min\b/g, 'litri al minuto')
+        .replace(/\bmL\b/g, 'millilitri')
+        .replace(/\bm²\b/g, 'metri quadrati')
+        .replace(/\bbpm\b/g, 'battiti al minuto');
     } else {
       s = s
         .replace(/~/g, 'about ')
@@ -1122,7 +1291,7 @@ class AtlasApp {
     if (!('speechSynthesis' in window)) return null;
     const voices = window.speechSynthesis.getVoices() || [];
     if (!voices.length) return null;
-    const targetPrefix = lang === 'es' ? 'es' : lang === 'zh' ? 'zh' : 'en';
+    const targetPrefix = normalizeLang(lang);
     const matching = voices.filter((v) => {
       const vl = String(v.lang || '').toLowerCase();
       if (targetPrefix === 'zh') return vl.startsWith('zh') || vl.startsWith('cmn');
@@ -1133,7 +1302,7 @@ class AtlasApp {
     const noveltyPattern =
       /albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|hysterical|pipe organ|trinoids|whisper|zarvox|fred|junior|ralph|espeak/i;
     const preferredNames =
-      /ava|samantha|allison|victoria|karen|daniel|serena|paulina|mónica|monica|jorge|tingting|ting-ting|meijia|sinji|xiaoxiao|yunxi/i;
+      /ava|samantha|allison|victoria|karen|daniel|serena|paulina|mónica|monica|jorge|tingting|ting-ting|meijia|sinji|xiaoxiao|yunxi|kyoko|otoya|nanami|yuna|sunhi|luciana|joana|francisca|thomas|amelie|amélie|audrey|henri|denise|alice|luca|elsa|diego/i;
 
     let best = matching[0];
     let bestScore = -999;

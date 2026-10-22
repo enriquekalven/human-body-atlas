@@ -303,12 +303,63 @@ const LAYER_LABELS_BY_LANG = {
     vessels: '心血管系统',
     organs: '内脏器官系统',
     nerves: '神经系统'
+  },
+  ja: {
+    skin: '外皮系・体表',
+    muscles: '筋系',
+    skeleton: '骨格系',
+    vessels: '心血管系',
+    organs: '内臓器官系',
+    nerves: '神経系'
+  },
+  ko: {
+    skin: '외피계 및 체표',
+    muscles: '근육계',
+    skeleton: '골격계',
+    vessels: '심혈관계',
+    organs: '내장 기관계',
+    nerves: '신경계'
+  },
+  pt: {
+    skin: 'Pele e superfície',
+    muscles: 'Sistema muscular',
+    skeleton: 'Sistema esquelético',
+    vessels: 'Sistema cardiovascular',
+    organs: 'Órgãos internos',
+    nerves: 'Sistema nervoso'
+  },
+  fr: {
+    skin: 'Peau et surface',
+    muscles: 'Système musculaire',
+    skeleton: 'Système squelettique',
+    vessels: 'Système cardiovasculaire',
+    organs: 'Organes internes',
+    nerves: 'Système nerveux'
+  },
+  it: {
+    skin: 'Pelle e superficie',
+    muscles: 'Sistema muscolare',
+    skeleton: 'Sistema scheletrico',
+    vessels: 'Sistema cardiovascolare',
+    organs: 'Organi interni',
+    nerves: 'Sistema nervoso'
   }
+};
+
+const LAYER_FALLBACK_BY_LANG = {
+  en: 'Anatomy',
+  es: 'Anatomía',
+  zh: '解剖结构',
+  ja: '解剖構造',
+  ko: '해부학 구조',
+  pt: 'Anatomia',
+  fr: 'Anatomie',
+  it: 'Anatomia'
 };
 
 export function layerLabel(layer, lang = 'en') {
   const dict = LAYER_LABELS_BY_LANG[lang] || LAYER_LABELS;
-  const fallback = lang === 'es' ? 'Anatomía' : lang === 'zh' ? '解剖结构' : 'Anatomy';
+  const fallback = LAYER_FALLBACK_BY_LANG[lang] || 'Anatomy';
   return dict[layer] || fallback;
 }
 
@@ -319,22 +370,38 @@ function foldAccents(s) {
     .toLowerCase();
 }
 
+const NON_EN_LANGS = ['es', 'zh', 'ja', 'ko', 'pt', 'fr', 'it'];
+
+function buildTranslatedRecord(baseName) {
+  const namesByLang = { en: baseName };
+  const lowers = [];
+  for (const l of NON_EN_LANGS) {
+    const tr = translateAnatomyName(baseName, l);
+    namesByLang[l] = tr;
+    lowers.push(foldAccents(tr));
+  }
+  return {
+    namesByLang,
+    nameEs: namesByLang.es,
+    nameZh: namesByLang.zh,
+    lowerEs: foldAccents(namesByLang.es),
+    lowerZh: namesByLang.zh.toLowerCase(),
+    lowerMulti: lowers
+  };
+}
+
 // ----------------------------------------------------------------------------
-// Search index over parts + groups (English + Spanish + Simplified Chinese)
+// Search index over parts + groups (8 languages: en, es, zh, ja, ko, pt, fr, it)
 // ----------------------------------------------------------------------------
 export function buildSearchIndex(manifest) {
   const entries = [];
   manifest.parts.forEach((p, i) => {
-    const nameEs = translateAnatomyName(p.name, 'es');
-    const nameZh = translateAnatomyName(p.name, 'zh');
+    const tr = buildTranslatedRecord(p.name);
     entries.push({
       kind: 'part',
       name: p.name,
-      nameEs,
-      nameZh,
+      ...tr,
       lower: p.name.toLowerCase(),
-      lowerEs: foldAccents(nameEs),
-      lowerZh: nameZh.toLowerCase(),
       members: [i],
       layer: p.layer,
       fma: p.fma
@@ -343,16 +410,12 @@ export function buildSearchIndex(manifest) {
   for (const g of manifest.groups) {
     if (g.members.length < 2) continue;
     const name = g.name.charAt(0).toUpperCase() + g.name.slice(1);
-    const nameEs = translateAnatomyName(name, 'es');
-    const nameZh = translateAnatomyName(name, 'zh');
+    const tr = buildTranslatedRecord(name);
     entries.push({
       kind: 'group',
       name,
-      nameEs,
-      nameZh,
+      ...tr,
       lower: g.name.toLowerCase(),
-      lowerEs: foldAccents(nameEs),
-      lowerZh: nameZh.toLowerCase(),
       members: g.members,
       fma: g.fma,
       parents: g.parents
@@ -386,9 +449,22 @@ export function searchAnatomy(index, rawQuery, limit = 10) {
     let score = 0;
     const lowerEs = e.lowerEs || '';
     const lowerZh = e.lowerZh || '';
-    if (e.lower === q || lowerEs === qEs || lowerZh === q0) score = 1000;
-    else if (e.lower.startsWith(q) || lowerEs.startsWith(qEs) || lowerZh.startsWith(q0)) score = 600;
-    else if (
+    const lowerMulti = e.lowerMulti || [];
+    if (
+      e.lower === q ||
+      lowerEs === qEs ||
+      lowerZh === q0 ||
+      lowerMulti.some((m) => m === qFolded || m === q0)
+    ) {
+      score = 1000;
+    } else if (
+      e.lower.startsWith(q) ||
+      lowerEs.startsWith(qEs) ||
+      lowerZh.startsWith(q0) ||
+      lowerMulti.some((m) => m.startsWith(qFolded) || m.startsWith(q0))
+    ) {
+      score = 600;
+    } else if (
       new RegExp(`\\b${escapeRegex(q)}`).test(e.lower) ||
       (lowerEs && new RegExp(`\\b${escapeRegex(qEs)}`).test(lowerEs))
     ) {
@@ -396,7 +472,8 @@ export function searchAnatomy(index, rawQuery, limit = 10) {
     } else if (
       words.every((w) => e.lower.includes(w)) ||
       (lowerEs && wordsEs.every((w) => lowerEs.includes(w))) ||
-      (lowerZh && lowerZh.includes(q0))
+      (lowerZh && lowerZh.includes(q0)) ||
+      lowerMulti.some((m) => m.includes(qFolded) || m.includes(q0))
     ) {
       score = 220;
     } else {
