@@ -4,7 +4,8 @@
  *
  * All procedural detail is evaluated in world space (metres), so it never stretches and needs no UVs.
  * The shader source is identical for every tissue; variation comes only from #defines
- * (TISSUE_BUMP_TYPE, TISSUE_FIBER, TISSUE_FLOW), which three.js includes in its program cache key.
+ * (TISSUE_BUMP_TYPE, TISSUE_FIBER, TISSUE_FLOW, TISSUE_TENDON_BLEND, TISSUE_TENDON_PART), which
+ * three.js includes in its program cache key.
  *
  * Simplex noise: Ashima Arts / Stefan Gustavson (MIT License), https://github.com/ashima/webgl-noise
  */
@@ -26,6 +27,11 @@ varying float vSeed;
 attribute vec3 fiberDir;
 varying vec3 vFiber;
 #endif
+#ifdef TISSUE_TENDON_BLEND
+// Build-time tendon mask (tools/tendon-mask.mjs), normalized UNSIGNED_BYTE: 0 = belly, 1 = tendon.
+attribute float _tendon;
+varying float vTendon;
+#endif
 `;
 
 export const VERTEX_BODY = /* glsl */ `
@@ -35,6 +41,9 @@ vSeed = fract(sin(dot(modelMatrix[3].xyz, vec3(12.9898, 78.233, 37.719))) * 4375
 vec3 txRawFiber = mat3(modelMatrix) * fiberDir;
 vFiber = dot(txRawFiber, txRawFiber) > 1e-8 ? normalize(txRawFiber) : vec3(0.0, 1.0, 0.0);
 #endif
+#ifdef TISSUE_TENDON_BLEND
+vTendon = clamp(_tendon, 0.0, 1.0);
+#endif
 `;
 
 export const FRAGMENT_HEADER = /* glsl */ `
@@ -42,6 +51,9 @@ varying vec3 vWPos;
 varying float vSeed;
 #ifdef TISSUE_FIBER
 varying vec3 vFiber;
+#endif
+#ifdef TISSUE_TENDON_BLEND
+varying float vTendon;
 #endif
 
 uniform float uFlowTime;
@@ -62,6 +74,9 @@ uniform vec4 uFlushPts[5];
 uniform float uFlush;
 uniform vec4 uLipPos;
 uniform vec3 uLipColor;
+uniform vec4 uTendonLook; // rgb: tendon colour (linear), a: tendon roughness
+uniform vec4 uTendonCoat; // x: clearcoat, y: clearcoat roughness, z: sheen, w: sheen roughness
+uniform float uTendonFocus; // 0..1, "Tendons" highlight: emphasise tendons, dim bellies
 
 vec3 tx_mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 tx_mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -253,10 +268,38 @@ diffuseColor.rgb *= 0.95 + 0.07 * smoothstep(-0.8, 0.8, txH0);
   }
 }
 #endif
+// Tendon regions of muscle meshes (build-time _tendon mask) take the tendon look: pearly colour,
+// gentler mottling and finer fibre grooves. Tendon-material parts count as fully tendon.
+float txTendon = 0.0;
+#ifdef TISSUE_TENDON_BLEND
+txTendon = smoothstep(0.15, 0.85, vTendon);
+if (txTendon > 0.0) {
+  vec3 txTCol = uTendonLook.rgb * (1.0 + 0.04 * (tx_snoise(vWPos * 42.0) + (vSeed - 0.5) * 1.6));
+  #if TISSUE_BUMP_TYPE == 1
+  txTCol *= 0.9 + 0.13 * smoothstep(-0.6, 0.6, txH0);
+  #endif
+  diffuseColor.rgb = mix(diffuseColor.rgb, txTCol, txTendon);
+}
+#endif
+#ifdef TISSUE_TENDON_PART
+txTendon = 1.0;
+#endif
+#if defined(TISSUE_TENDON_BLEND) || defined(TISSUE_TENDON_PART)
+if (uTendonFocus > 0.0) {
+  // "Tendons" highlight: bellies recede (darker, desaturated) and tendons brighten.
+  float txLum = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+  vec3 txBelly = mix(diffuseColor.rgb, vec3(txLum), 0.65) * 0.3;
+  vec3 txTend = min(diffuseColor.rgb * 1.15 + 0.03, vec3(1.0));
+  diffuseColor.rgb = mix(diffuseColor.rgb, mix(txBelly, txTend, txTendon), uTendonFocus);
+}
+#endif
 `;
 
 // Injected after <roughnessmap_fragment>: grooves are slightly rougher than ridges; lips are slightly glossier.
 export const ROUGHNESS_BODY = /* glsl */ `
+#ifdef TISSUE_TENDON_BLEND
+roughnessFactor = mix(roughnessFactor, uTendonLook.a, txTendon);
+#endif
 roughnessFactor = clamp(roughnessFactor - txH0 * 0.06 - txLipMask * (uLipPos.w > 1.5 ? 0.21 : 0.14), 0.04, 1.0);
 `;
 
@@ -266,6 +309,9 @@ export const NORMAL_BODY = /* glsl */ `
 #if TISSUE_BUMP_TYPE > 0
 {
   float txH = txH0 * uBumpStrength * 0.00016;
+  #ifdef TISSUE_TENDON_BLEND
+  txH *= mix(1.0, 0.7, txTendon); // tendon relief is finer than muscle (TISSUES.tendon.bumpStrength)
+  #endif
   normal = tx_perturb(-vViewPosition, normal, txH, faceDirection);
 }
 #endif
@@ -282,7 +328,24 @@ export const EMISSIVE_BODY = /* glsl */ `
   totalEmissiveRadiance += uFlowColor * band * uFlowIntensity * (0.5 + 0.9 * uBeat);
 }
 #endif
+#if defined(TISSUE_TENDON_BLEND) || defined(TISSUE_TENDON_PART)
+totalEmissiveRadiance += vec3(0.3, 0.27, 0.22) * (txTendon * uTendonFocus * 0.45);
+#endif
 totalEmissiveRadiance += uHighlightColor * uHighlight;
+`;
+
+// Injected after <lights_physical_fragment>: tendon regions get the tendon clear-coat and sheen.
+export const PHYSICAL_BODY = /* glsl */ `
+#ifdef TISSUE_TENDON_BLEND
+#ifdef USE_CLEARCOAT
+material.clearcoat = mix(material.clearcoat, uTendonCoat.x, txTendon);
+material.clearcoatRoughness = clamp(mix(material.clearcoatRoughness, uTendonCoat.y + geometryRoughness, txTendon), 0.0525, 1.0);
+#endif
+#ifdef USE_SHEEN
+material.sheenColor = mix(material.sheenColor, vec3(uTendonCoat.z), txTendon);
+material.sheenRoughness = clamp(mix(material.sheenRoughness, uTendonCoat.w, txTendon), 0.0001, 1.0);
+#endif
+#endif
 `;
 
 // Injected before <opaque_fragment>: fresnel "x-ray" transparency for ghosted layers.

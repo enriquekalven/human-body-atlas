@@ -17,6 +17,26 @@ export const VOICE_CONFIG = {
   it: { languageCode: 'it-IT', name: 'it-IT-Chirp3-HD-Aoede' }
 };
 
+const RANGE_WORD = { en: 'to', es: 'a', pt: 'a', fr: 'à', it: 'a' };
+const DEGREE_WORD = {
+  en: ' degrees',
+  es: ' grados',
+  pt: ' graus',
+  fr: ' degrés',
+  it: ' gradi',
+  zh: '度',
+  ja: '度',
+  ko: '도'
+};
+const IT_ORDINALS = { 1: 'primo', 2: 'secondo', 3: 'terzo', 4: 'quarto', 5: 'quinto' };
+
+function joinRange(a, b, lang) {
+  if (lang === 'zh') return `${a}到${b}`;
+  if (lang === 'ja') return `${a}から${b}`;
+  if (lang === 'ko') return `${a}에서 ${b}`;
+  return `${a} ${RANGE_WORD[lang] || RANGE_WORD.en} ${b}`;
+}
+
 export function getTitleSeparator(lang = 'en') {
   return lang === 'zh' || lang === 'ja' ? '。' : '. ';
 }
@@ -51,8 +71,17 @@ export function buildTissueNarrationText(
   return `${displayTitle}${sep}${body}`;
 }
 
+export function prepareStudioText(cleanedText, _lang = 'en') {
+  return String(cleanedText || '');
+}
+
 /**
  * Unified helper for runtime `_speak()` and generator tasks.
+ *
+ * Returns:
+ * - `key`: studio clip key (`<audience>_<curatedId>` or `<audience>_tissue_<tissueKey>`)
+ * - `cleanedText`: natural plain text for device (Web Speech) voices
+ * - `studioText`: exact text sent to Chirp 3 HD (hashed into the clip manifest)
  */
 export function buildSelectionNarration({
   lang = 'en',
@@ -66,12 +95,14 @@ export function buildSelectionNarration({
     const key = `${audience}_${curatedPart.id}`;
     const rawText = buildCuratedNarrationText(curatedPart, audience, lang);
     const cleanedText = cleanTextForTts(rawText, lang);
-    return { key, rawText, cleanedText, isCurated: true };
+    const studioText = prepareStudioText(cleanedText, lang);
+    return { key, rawText, cleanedText, studioText, isCurated: true };
   }
   const key = `${audience}_tissue_${tissueKey}`;
   const rawText = buildTissueNarrationText(tissueInfo, audience, lang, displayTitle);
   const cleanedText = cleanTextForTts(rawText, lang);
-  return { key, rawText, cleanedText, isCurated: false };
+  const studioText = prepareStudioText(cleanedText, lang);
+  return { key, rawText, cleanedText, studioText, isCurated: false };
 }
 
 /**
@@ -94,6 +125,19 @@ export function cleanTextForTts(rawText, lang = 'en') {
 
   // 3. Strip any inline syllable-hyphenated pronunciation guides if present
   s = s.replace(/(?:Say it|Cómo se dice|Pronúncia|Prononciation|Pronuncia|読み方|발음|发音提示)\s*[:：]\s*["“«「『][^"”»」』]+["”»」』]/gi, '');
+
+  // 4a. Numeric ranges ("1–7", "15°–30°", "V1–V4", "300~500") read as "1 to 7", never as a pause
+  s = s.replace(
+    /(\b[A-Z]{0,2}\d+(?:[.,]\d+)?)(?:\s*°)?\s*[–—~～〜]\s*([A-Z]{0,2}\d+(?:[.,]\d+)?)/g,
+    (_m, a, b) => joinRange(a, b, lang)
+  );
+
+  // 4b. Degrees after a number (angles); "°C" is expanded per language below.
+  //     Italian "1° spazio" is an ordinal ("primo"), not an angle.
+  if (lang === 'it') {
+    s = s.replace(/\b([1-5])°(?=\s+\p{Ll})/gu, (_m, n) => IT_ORDINALS[n]);
+  }
+  s = s.replace(/(\d)\s*°(?!\s*C\b)/g, (_m, d) => `${d}${DEGREE_WORD[lang] || DEGREE_WORD.en}`);
 
   // 4. Replace arrows and dashes with natural pauses
   const pauseSep = lang === 'zh' || lang === 'ja' ? '、' : ', ';
@@ -140,26 +184,25 @@ export function cleanTextForTts(rawText, lang = 'en') {
       .replace(/(\d)\s*kg\b/g, '$1千克')
       .replace(/\bbpm\b/gi, '次每分钟')
       .replace(/×\s*(\d+)/g, '乘$1')
-      .replace(/[，、；;：:\/（）()""“”‘’·]/g, '。')
-      .replace(/[！？!?]/g, '。')
-      .replace(/\.\s*/g, '。')
-      .replace(/\s+/g, '')
-      .replace(/。+/g, '。');
-    // Chirp3-HD cmn-CN requires concise clauses (<= 25 chars per sentence) with a space after 。
-    s =
-      s
-        .split('。')
-        .filter(Boolean)
-        .flatMap((seg) => {
-          if (seg.length <= 25) return [seg];
-          const chunks = [];
-          for (let i = 0; i < seg.length; i += 22) {
-            chunks.push(seg.slice(i, i + 22));
-          }
-          return chunks;
-        })
-        .join('。 ') + '。';
-    return s;
+      // Natural punctuation for both device voices and Chirp (studio segmentation is separate)
+      .replace(/[“”"‘’「」『』·]/g, '')
+      .replace(/(?<=\p{Script=Han})\/(?=\p{Script=Han})/gu, '、')
+      .replace(/[（(]/g, '，')
+      .replace(/[）)]/g, '，')
+      .replace(/,/g, '，')
+      .replace(/;/g, '；')
+      .replace(/:/g, '：')
+      .replace(/!/g, '！')
+      .replace(/\?/g, '？')
+      .replace(/\.(?!\d)/g, '。')
+      .replace(/\s+/g, ' ')
+      .replace(/(?<=[\p{Script=Han}，。、；：！？])\s+/gu, '')
+      .replace(/\s+(?=[\p{Script=Han}，。、；：！？])/gu, '')
+      .replace(/[，、；：]+(?=[。！？])/g, '')
+      .replace(/([。！？])[，、；：]+/g, '$1')
+      .replace(/[，、]{2,}/g, '，')
+      .replace(/^[，、；：。]+/, '');
+    return s.trim();
   } else if (lang === 'ja') {
     s = s
       .replace(/[≈~]\s*/g, '約')
@@ -179,7 +222,8 @@ export function cleanTextForTts(rawText, lang = 'en') {
       .replace(/(\d)\s*kg\b/g, '$1キログラム')
       .replace(/\bbpm\b/gi, '回毎分')
       .replace(/×\s*(\d+)/g, 'かける$1')
-      .replace(/。/g, '。 ');
+      .replace(/[（(]([^（）()]{1,40})[）)]/g, '、$1、')
+      .replace(/、+(?=[。！？])/g, '');
   } else if (lang === 'ko') {
     s = s
       .replace(/[≈~]\s*/g, '약 ')

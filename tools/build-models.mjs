@@ -21,6 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import { reconstructLungs, reconstructSpinalCord } from './reconstruct.mjs';
+import { computeTendonMask, quantizeUnorm8 } from './tendon-mask.mjs';
 import {
   loadFemaleOrgans,
   buildFemaleSkin,
@@ -28,6 +29,8 @@ import {
   buildFemaleHair,
   buildFemaleLip
 } from './female-anatomy.mjs';
+
+const tendonStats = { parts: 0, fullVertices: 0, ms: 0 };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = path.join(ROOT, 'tools', 'raw');
@@ -311,6 +314,7 @@ function parseObj(file) {
 function compact(positions, indices) {
   const remap = new Int32Array(positions.length / 3).fill(-1);
   const outPos = [];
+  const orig = [];
   const outIdx = new Uint32Array(indices.length);
   let next = 0;
   for (let i = 0; i < indices.length; i++) {
@@ -318,10 +322,11 @@ function compact(positions, indices) {
     if (remap[v] === -1) {
       remap[v] = next++;
       outPos.push(positions[v * 3], positions[v * 3 + 1], positions[v * 3 + 2]);
+      orig.push(v);
     }
     outIdx[i] = remap[v];
   }
-  return { positions: new Float32Array(outPos), indices: outIdx };
+  return { positions: new Float32Array(outPos), indices: outIdx, origIndex: Uint32Array.from(orig) };
 }
 
 // Merge vertices with identical positions. Duplicates along seams otherwise act as mesh borders,
@@ -513,10 +518,21 @@ class GlbBuilder {
     const nrmAcc = acc.length - 1;
     acc.push({ bufferView: idxView, componentType: vcount < 65536 ? 5123 : 5125, count: indices.length, type: 'SCALAR' });
     const idxAcc = acc.length - 1;
+    const attributes = { POSITION: posAcc, NORMAL: nrmAcc };
+    if (part.tendon) {
+      // Custom attribute (three.js GLTFLoader exposes it as geometry.attributes._tendon).
+      // glTF requires every vertex-attribute element to start on a 4-byte boundary, so the
+      // 1-byte values use a byteStride of 4.
+      const packed = new Uint8Array(vcount * 4);
+      for (let i = 0; i < vcount; i++) packed[i * 4] = part.tendon[i];
+      const tView = this.addView(packed, 34962, 4);
+      acc.push({ bufferView: tView, componentType: 5121, normalized: true, count: vcount, type: 'SCALAR' });
+      attributes._TENDON = acc.length - 1;
+    }
 
     this.json.meshes.push({
       name: part.name,
-      primitives: [{ attributes: { POSITION: posAcc, NORMAL: nrmAcc }, indices: idxAcc, material: materialIdx, mode: 4 }]
+      primitives: [{ attributes, indices: idxAcc, material: materialIdx, mode: 4 }]
     });
     this.json.nodes.push({
       name: part.name,
@@ -732,6 +748,19 @@ for (const p of parsed) {
   const bb = bbox(c.positions);
   floorY = Math.min(floorY, bb.min[1]);
   outTris += c.indices.length / 3;
+  // Tendon mask: computed on the full-resolution mesh (thin tendons keep their real cross-section
+  // there), then sampled at the simplified vertices, which meshoptimizer keeps from the originals.
+  let tendon = null;
+  if (p.cls.layer === 'muscles' && p.cls.mat === 'muscle') {
+    const t0 = performance.now();
+    const full = computeTendonMask(world, source, computeNormals(world, source));
+    const sampled = new Float32Array(c.origIndex.length);
+    for (let i = 0; i < sampled.length; i++) sampled[i] = full.tendon[c.origIndex[i]];
+    tendon = quantizeUnorm8(sampled);
+    tendonStats.ms += performance.now() - t0;
+    tendonStats.parts++;
+    tendonStats.fullVertices += world.length / 3;
+  }
   const side = /^left\b|\bleft\b/.test(p.name.toLowerCase()) ? 'left' : /^right\b|\bright\b/.test(p.name.toLowerCase()) ? 'right' : '';
   const sex = MALE_REPLACED_FJS.has(p.fj) || MALE_ONLY_RE.test(p.name) ? 'male' : '';
   layers.get(p.cls.layer).push({
@@ -740,10 +769,12 @@ for (const p of parsed) {
     normals,
     indices: c.indices,
     bb,
+    ...(tendon ? { tendon } : {}),
     extras: { fj: p.fj, fma: p.fma, cat: p.cls.cat, mat: p.cls.mat, layer: p.cls.layer, flow: p.cls.flow || 0, group: p.cls.group || '', side, ...(sex ? { sex } : {}) }
   });
 }
 console.log(`Simplified to ${outTris.toLocaleString()} triangles (${((outTris / rawTris) * 100).toFixed(1)}%), re-oriented ${flipped} inside-out meshes`);
+console.log(`Tendon mask: ${tendonStats.parts} muscle meshes, ${tendonStats.fullVertices.toLocaleString()} full-resolution vertices, ${(tendonStats.ms / 1000).toFixed(1)} s`);
 
 // Shift so feet rest on y = 0 and the body is centred on x/z.
 const allBox = { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };

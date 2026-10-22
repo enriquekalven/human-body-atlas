@@ -22,13 +22,17 @@ import {
 } from './analytics.js';
 import {
   SUPPORTED_LANGS,
+  PUBLIC_LANGS,
   normalizeLang,
+  getAvailableLanguages,
+  gateLang,
   getUiStrings,
   getLocalizedPart,
   getLocalizedTissueInfo,
   getLocalizedQuizQuestions,
   translateAnatomyName
 } from './i18n.js';
+import { buildSelectionNarration, cleanTextForTts } from './narration.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -120,13 +124,22 @@ class AtlasApp {
   }
 
   _detectInitialLanguage() {
+    const search = window.location.search;
     const urlLang = this.params.get('lang');
-    if (urlLang) return normalizeLang(urlLang);
+    if (urlLang) return gateLang(urlLang, search);
     try {
       const saved = window.localStorage.getItem('atlas_lang');
-      if (saved) return normalizeLang(saved);
+      if (saved) return gateLang(saved, search);
     } catch (_e) {
       // Ignore storage access errors
+    }
+    const navLangs =
+      Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : [navigator.language || 'en'];
+    for (const candidate of navLangs) {
+      const norm = normalizeLang(candidate);
+      if (getAvailableLanguages(search).includes(norm)) return norm;
     }
     return 'en';
   }
@@ -312,7 +325,7 @@ class AtlasApp {
   // Language & UI strings
   // --------------------------------------------------------------------------
   _setLanguage(lang) {
-    const next = normalizeLang(lang);
+    const next = gateLang(lang, window.location.search);
     if (next === this.lang) return;
     const prev = this.lang;
     this._stopSpeech();
@@ -343,9 +356,12 @@ class AtlasApp {
   }
 
   _syncLanguageButtons() {
+    const available = getAvailableLanguages(window.location.search);
     for (const code of SUPPORTED_LANGS) {
       const btn = $(`btn-lang-${code}`);
       if (!btn) continue;
+      const isVisible = available.includes(code);
+      btn.classList.toggle('hidden', !isVisible);
       const active = this.lang === code;
       btn.classList.toggle('is-active', active);
       btn.setAttribute('aria-pressed', String(active));
@@ -355,9 +371,13 @@ class AtlasApp {
 
   _applyUiStrings() {
     const ui = this._ui();
+    const isTouch = isMobileDevice() || window.matchMedia('(pointer: coarse)').matches;
     document.title = ui.pageTitle;
     if ($('skip-link')) $('skip-link').textContent = ui.skipLink;
-    $('anatomy-canvas').setAttribute('aria-label', ui.canvasAria);
+    $('anatomy-canvas').setAttribute(
+      'aria-label',
+      isTouch && ui.canvasAriaTouch ? ui.canvasAriaTouch : ui.canvasAria
+    );
     if ($('loading-title')) $('loading-title').textContent = ui.loadingTitle;
     if ($('loading-sub') && !this.manifest) $('loading-sub').textContent = ui.loadingSubDefault;
     if ($('brand-title')) $('brand-title').textContent = ui.brandTitle;
@@ -424,11 +444,15 @@ class AtlasApp {
 
     $('inspector-panel').setAttribute('aria-label', ui.inspectorAria);
     if ($('inspector-empty-title')) $('inspector-empty-title').textContent = ui.emptyTitle;
-    if ($('inspector-empty-desc')) $('inspector-empty-desc').textContent = ui.emptyDesc;
+    if ($('inspector-empty-desc')) {
+      $('inspector-empty-desc').textContent =
+        isTouch && ui.emptyDescTouch ? ui.emptyDescTouch : ui.emptyDesc;
+    }
     if ($('inspector-tips')) {
       const tipsList = $('inspector-tips');
       tipsList.replaceChildren();
-      for (const t of ui.tips) {
+      const tipsArr = isTouch && ui.tipsTouch ? ui.tipsTouch : ui.tips;
+      for (const t of tipsArr) {
         const li = el('li');
         if (t.bold) li.appendChild(el('strong', null, t.bold));
         if (t.rest) li.appendChild(document.createTextNode(t.rest));
@@ -1113,30 +1137,26 @@ class AtlasApp {
         ? curated.name
         : this._displayName(sel.title);
 
-    let text = `${displayTitle}. `;
-    if (curated) {
-      text +=
-        this.audience === 'kids'
-          ? `${curated.kids.summary} ${curated.kids.whyYouNeedIt}`
-          : `${curated.pro.summary} ${curated.pro.clinicalPearls}`;
-    } else {
-      text += this.audience === 'kids' ? info.kids : info.pro;
-    }
+    const narration = buildSelectionNarration({
+      lang: this.lang,
+      audience: this.audience,
+      curatedPart: curated,
+      tissueKey: tissue,
+      tissueInfo: info,
+      displayTitle
+    });
 
     this.isSpeaking = true;
     this._syncSpeakButton();
 
     // Pre-rendered Chirp3-HD Studio MP3s exist for en, es, zh; other languages use Neural Browser TTS directly
-    const hasStudioAudio = ['en', 'es', 'zh'].includes(this.lang);
+    const hasStudioAudio = PUBLIC_LANGS.includes(this.lang);
     if (!hasStudioAudio) {
-      this._speakWithBrowserTTS(text);
+      this._speakWithBrowserTTS(narration.cleanedText);
       return;
     }
 
-    const studioFile = curated
-      ? `./assets/audio/${this.lang}/${this.audience}_${curated.id}.mp3`
-      : `./assets/audio/${this.lang}/${this.audience}_tissue_${tissue}.mp3`;
-
+    const studioFile = `./assets/audio/${this.lang}/${narration.key}.mp3`;
     const audio = new Audio(studioFile);
     this.currentAudio = audio;
     let fellBack = false;
@@ -1145,7 +1165,7 @@ class AtlasApp {
       if (fellBack || this.currentAudio !== audio) return;
       fellBack = true;
       this.currentAudio = null;
-      this._speakWithBrowserTTS(text);
+      this._speakWithBrowserTTS(narration.cleanedText);
     };
 
     audio.addEventListener('ended', () => {
@@ -1187,104 +1207,68 @@ class AtlasApp {
     });
 
     window.speechSynthesis.cancel();
-    const cleaned = this._cleanSpeechProsody(rawText, this.lang);
-    const u = new SpeechSynthesisUtterance(cleaned);
-    const bestVoice = this._pickBestBrowserVoice(this.lang);
-    if (bestVoice) {
-      u.voice = bestVoice;
-      u.lang = bestVoice.lang;
-    } else {
-      u.lang = BCP_47_BY_LANG[this.lang] || 'en-US';
+    const cleaned = cleanTextForTts(rawText, this.lang);
+    const chunks = this._chunkForBrowserTts(cleaned, this.lang);
+    if (!chunks.length) {
+      this._stopSpeech();
+      return;
     }
-    u.rate = this.audience === 'kids' ? 0.96 : 0.98;
-    u.pitch = 1.0;
-    u.onend = () => this._stopSpeech();
-    u.onerror = () => this._stopSpeech();
-    window.speechSynthesis.speak(u);
+    const bestVoice = this._pickBestBrowserVoice(this.lang);
+    const bcp47 = bestVoice ? bestVoice.lang : BCP_47_BY_LANG[this.lang] || 'en-US';
+    const rate = this.audience === 'kids' ? 0.96 : 0.98;
+
+    let idx = 0;
+    const speakNext = () => {
+      if (!this.isSpeaking || idx >= chunks.length) {
+        this._stopSpeech();
+        return;
+      }
+      const u = new SpeechSynthesisUtterance(chunks[idx++]);
+      if (bestVoice) u.voice = bestVoice;
+      u.lang = bcp47;
+      u.rate = rate;
+      u.pitch = 1.0;
+      u.onend = () => speakNext();
+      u.onerror = () => this._stopSpeech();
+      window.speechSynthesis.speak(u);
+    };
+    speakNext();
   }
 
-  _cleanSpeechProsody(text, lang = 'en') {
-    let s = String(text || '');
-    // Remove parenthetical FMA/Terminologia Anatomica codes that sound unnatural
-    s = s.replace(/\((?:FMA|TA98)[^)]*\)/gi, '');
-    s = s.replace(/[—–]/g, ', ');
-
-    if (lang === 'es') {
-      s = s
-        .replace(/~/g, 'aproximadamente ')
-        .replace(/\bmmHg\b/g, 'milímetros de mercurio')
-        .replace(/\bmL\/min\b/g, 'mililitros por minuto')
-        .replace(/\bL\/min\b/g, 'litros por minuto')
-        .replace(/\bmL\/día\b/g, 'mililitros por día')
-        .replace(/\bmL\b/g, 'mililitros')
-        .replace(/\bm²\b/g, 'metros cuadrados')
-        .replace(/\blpm\b/g, 'latidos por minuto')
-        .replace(/\bNC\s+([IVX]+)/g, 'nervio craneal $1');
-    } else if (lang === 'zh') {
-      s = s
-        .replace(/~/g, '约 ')
-        .replace(/\bmmHg\b/g, '毫米汞柱')
-        .replace(/\bmL\/min\b/g, '毫升每分钟')
-        .replace(/\bL\/min\b/g, '升每分钟')
-        .replace(/\bmL\/d\b/g, '毫升每天')
-        .replace(/\bmL\b/g, '毫升')
-        .replace(/\bm²\b/g, '平方米');
-    } else if (lang === 'ja') {
-      s = s
-        .replace(/~/g, '約 ')
-        .replace(/\bmmHg\b/g, 'ミリメートル水銀柱')
-        .replace(/\bmL\/min\b/g, 'ミリリットル毎分')
-        .replace(/\bL\/min\b/g, 'リットル毎分')
-        .replace(/\bmL\b/g, 'ミリリットル')
-        .replace(/\bm²\b/g, '平方メートル');
-    } else if (lang === 'ko') {
-      s = s
-        .replace(/~/g, '약 ')
-        .replace(/\bmmHg\b/g, '밀리미터 수은주')
-        .replace(/\bmL\/min\b/g, '분당 밀리리터')
-        .replace(/\bL\/min\b/g, '분당 리터')
-        .replace(/\bmL\b/g, '밀리리터')
-        .replace(/\bm²\b/g, '제곱미터');
-    } else if (lang === 'pt') {
-      s = s
-        .replace(/~/g, 'aproximadamente ')
-        .replace(/\bmmHg\b/g, 'milímetros de mercúrio')
-        .replace(/\bmL\/min\b/g, 'mililitros por minuto')
-        .replace(/\bL\/min\b/g, 'litros por minuto')
-        .replace(/\bmL\b/g, 'mililitros')
-        .replace(/\bm²\b/g, 'metros quadrados')
-        .replace(/\bbpm\b/g, 'batimentos por minuto');
-    } else if (lang === 'fr') {
-      s = s
-        .replace(/~/g, 'environ ')
-        .replace(/\bmmHg\b/g, 'millimètres de mercure')
-        .replace(/\bmL\/min\b/g, 'millilitres par minute')
-        .replace(/\bL\/min\b/g, 'litres par minute')
-        .replace(/\bmL\b/g, 'millilitres')
-        .replace(/\bm²\b/g, 'mètres carrés')
-        .replace(/\bbpm\b/g, 'battements par minute');
-    } else if (lang === 'it') {
-      s = s
-        .replace(/~/g, 'circa ')
-        .replace(/\bmmHg\b/g, 'millimetri di mercurio')
-        .replace(/\bmL\/min\b/g, 'millilitri al minuto')
-        .replace(/\bL\/min\b/g, 'litri al minuto')
-        .replace(/\bmL\b/g, 'millilitri')
-        .replace(/\bm²\b/g, 'metri quadrati')
-        .replace(/\bbpm\b/g, 'battiti al minuto');
-    } else {
-      s = s
-        .replace(/~/g, 'about ')
-        .replace(/\bmmHg\b/g, 'millimeters of mercury')
-        .replace(/\bmL\/min\b/g, 'milliliters per minute')
-        .replace(/\bL\/min\b/g, 'liters per minute')
-        .replace(/\bmL\/day\b/g, 'milliliters per day')
-        .replace(/\bmL\b/g, 'milliliters')
-        .replace(/\bm²\b/g, 'square meters')
-        .replace(/\bbpm\b/g, 'beats per minute')
-        .replace(/\bCN\s+([IVX]+)/g, 'cranial nerve $1');
+  _chunkForBrowserTts(text, lang = 'en', maxChars = 180) {
+    const s = String(text || '').trim();
+    if (!s) return [];
+    if (s.length <= maxChars) return [s];
+    const sep = lang === 'zh' || lang === 'ja' ? /(?<=[。！？!?])\s*/u : /(?<=[.!?。！？])\s+/u;
+    const joiner = lang === 'zh' || lang === 'ja' ? '' : ' ';
+    const sentences = s.split(sep).filter(Boolean);
+    const out = [];
+    let cur = '';
+    for (const sent of sentences) {
+      const candidate = cur ? `${cur}${joiner}${sent}` : sent;
+      if (candidate.length <= maxChars) {
+        cur = candidate;
+      } else {
+        if (cur) out.push(cur);
+        if (sent.length <= maxChars) {
+          cur = sent;
+        } else {
+          const clauses = sent.split(/(?<=[,，、;；:：])\s*/u).filter(Boolean);
+          cur = '';
+          for (const cl of clauses) {
+            const c2 = cur ? `${cur}${joiner}${cl}` : cl;
+            if (c2.length <= maxChars) {
+              cur = c2;
+            } else {
+              if (cur) out.push(cur);
+              cur = cl;
+            }
+          }
+        }
+      }
     }
-    return s.replace(/\s{2,}/g, ' ').trim();
+    if (cur) out.push(cur);
+    return out;
   }
 
   _pickBestBrowserVoice(lang = 'en') {
@@ -1493,7 +1477,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   } catch (err) {
     const banner = document.getElementById('error-banner');
-    const lang = normalizeLang(new URLSearchParams(window.location.search).get('lang'));
+    const lang = gateLang(new URLSearchParams(window.location.search).get('lang'), window.location.search);
     banner.textContent = getUiStrings(lang).errorWebgl;
     banner.classList.remove('hidden');
     console.error('Atlas initialisation failed:', err && err.message ? err.message : String(err));

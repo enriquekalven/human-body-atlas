@@ -7,9 +7,15 @@
  *   - 3D floating viewport labels
  *   - Inspector title, parent group chips ("Belongs to"), and sub-structure chips
  *   - Trilingual search bar (type in English, Spanish, or Chinese)
+ *
+ * Since v2.1 every displayable name (all manifest parts and groups, curated titles) has a reviewed translation in
+ * assets/i18n/anatomy-names/<lang>.json for es, zh, ja, ko, pt, fr and it. Those dictionaries are the primary source:
+ * they are lazy-loaded per language (ensureAnatomyNames) or injected synchronously (registerAnatomyNames, for Node
+ * tests and audit harnesses). The rule-based translator below is only a fallback, and its output is used only when it
+ * is clean; otherwise the English name is shown with a localized side marker — never a half-translated string.
  */
 
-import { translateExtraLang, EXTRA_MULTILINGUAL_SYNONYMS } from './i18nAnatomyTranslatorExtra.js';
+import { translateExtraLang, EXTRA_MULTILINGUAL_SYNONYMS, EXACT_NAMES_EXTRA } from './i18nAnatomyTranslatorExtra.js';
 
 // Direct exact-match dictionary (lowercase key -> { es, zh })
 const EXACT_NAMES = {
@@ -610,40 +616,54 @@ const TERM_STEMS = [
 ];
 
 const ORDINALS = {
-  first: { es: 'primer(a)', zh: '第 1 ' },
-  second: { es: 'segundo(a)', zh: '第 2 ' },
-  third: { es: 'tercer(a)', zh: '第 3 ' },
-  fourth: { es: 'cuarto(a)', zh: '第 4 ' },
-  fifth: { es: 'quinto(a)', zh: '第 5 ' },
-  sixth: { es: 'sexto(a)', zh: '第 6 ' },
-  seventh: { es: 'séptimo(a)', zh: '第 7 ' },
-  eighth: { es: 'octavo(a)', zh: '第 8 ' },
-  ninth: { es: 'noveno(a)', zh: '第 9 ' },
-  tenth: { es: 'décimo(a)', zh: '第 10 ' },
-  eleventh: { es: 'undécimo(a)', zh: '第 11 ' },
-  twelfth: { es: 'duodécimo(a)', zh: '第 12 ' }
+  first: { esMasc: 'primer', esFem: 'primera', zh: '第1' },
+  second: { esMasc: 'segundo', esFem: 'segunda', zh: '第2' },
+  third: { esMasc: 'tercer', esFem: 'tercera', zh: '第3' },
+  fourth: { esMasc: 'cuarto', esFem: 'cuarta', zh: '第4' },
+  fifth: { esMasc: 'quinto', esFem: 'quinta', zh: '第5' },
+  sixth: { esMasc: 'sexto', esFem: 'sexta', zh: '第6' },
+  seventh: { esMasc: 'séptimo', esFem: 'séptima', zh: '第7' },
+  eighth: { esMasc: 'octavo', esFem: 'octava', zh: '第8' },
+  ninth: { esMasc: 'noveno', esFem: 'novena', zh: '第9' },
+  tenth: { esMasc: 'décimo', esFem: 'décima', zh: '第10' },
+  eleventh: { esMasc: 'undécimo', esFem: 'undécima', zh: '第11' },
+  twelfth: { esMasc: 'duodécimo', esFem: 'duodécima', zh: '第12' }
 };
 
 const WORD_MAP_ES = {
-  left: 'izquierdo/a',
-  right: 'derecho/a',
+  left: 'izquierdo',
+  right: 'derecho',
   superior: 'superior',
   inferior: 'inferior',
-  middle: 'medio/a',
+  middle: 'medio',
   anterior: 'anterior',
   posterior: 'posterior',
   medial: 'medial',
   lateral: 'lateral',
-  internal: 'interno/a',
-  external: 'externo/a',
+  internal: 'interno',
+  external: 'externo',
   superficial: 'superficial',
-  deep: 'profundo/a',
+  deep: 'profundo',
   common: 'común',
-  proper: 'propio/a',
+  proper: 'propio',
   ascending: 'ascendente',
   descending: 'descendente',
-  transverse: 'transverso/a',
-  oblique: 'oblicuo/a',
+  transverse: 'transverso',
+  oblique: 'oblicuo',
+  long: 'largo',
+  short: 'corto',
+  abdominal: 'abdominal',
+  clavicular: 'clavicular',
+  sternal: 'esternal',
+  sternocostal: 'esternocostal',
+  spinal: 'espinal',
+  acromial: 'acromial',
+  lumbrical: 'lumbrical',
+  interosseous: 'interóseo',
+  plantar: 'plantar',
+  palmar: 'palmar',
+  dorsal: 'dorsal',
+  digital: 'digital',
   artery: 'arteria',
   vein: 'vena',
   nerve: 'nervio',
@@ -707,6 +727,20 @@ const WORD_MAP_ZH = {
   descending: '降',
   transverse: '横',
   oblique: '斜',
+  long: '长',
+  short: '短',
+  abdominal: '腹',
+  clavicular: '锁骨',
+  sternal: '胸骨',
+  sternocostal: '胸肋',
+  spinal: '脊柱',
+  acromial: '肩峰',
+  lumbrical: '蚓状肌',
+  interosseous: '骨间肌',
+  thumb: '拇指',
+  index: '示指',
+  finger: '指',
+  toe: '趾',
   artery: '动脉',
   vein: '静脉',
   nerve: '神经',
@@ -832,14 +866,41 @@ export function translateAnatomyName(englishName, lang = 'en') {
   return out;
 }
 
+const HEAD_PHRASES_ES = {
+  'long head': 'cabeza larga',
+  'short head': 'cabeza corta',
+  'lateral head': 'cabeza lateral',
+  'medial head': 'cabeza medial',
+  'abdominal part': 'porción abdominal',
+  'clavicular part': 'porción clavicular',
+  'sternal part': 'porción esternal',
+  'sternocostal part': 'porción esternocostal',
+  'spinal part': 'porción espinal',
+  'acromial part': 'porción acromial',
+  'descending part': 'porción descendente',
+  'transverse part': 'porción transversa',
+  'ascending part': 'porción ascendente',
+  'superior part': 'porción superior',
+  'inferior part': 'porción inferior',
+  'anterior part': 'porción anterior',
+  'posterior part': 'porción posterior',
+  'superficial part': 'porción superficial',
+  'deep part': 'porción profunda'
+};
+
 function translateToSpanish(lower, original) {
   // Handle "X of left/right Y" e.g. "Long head of left biceps brachii", "Abdominal part of right pectoralis major"
-  const ofMatch = lower.match(/^(.+?)\s+of\s+(left|right\s+)?(.+)$/);
+  const ofMatch = lower.match(/^(.+?)\s+of\s+(left\s+|right\s+)?(.+)$/);
   if (ofMatch) {
     const [, prefix, sideRaw, rest] = ofMatch;
     const prefixEs = translateFragmentEs(prefix.trim());
     const restEs = translateFragmentEs(rest.trim());
-    const sideEs = sideRaw ? (sideRaw.trim() === 'left' ? 'izquierdo' : 'derecho') : '';
+    const isRestFem = /^(arteria|vena|costilla|vértebra|glándula|trompa|rama|tributaria|porción|cabeza|escápula|clavícula|rótula|tibia|fíbula|ulna|mano|falange)/i.test(restEs);
+    const sideEs = sideRaw
+      ? sideRaw.trim() === 'left'
+        ? isRestFem ? 'izquierda' : 'izquierdo'
+        : isRestFem ? 'derecha' : 'derecho'
+      : '';
     return capFirst(`${prefixEs} de ${restEs}${sideEs ? ' ' + sideEs : ''}`);
   }
 
@@ -858,21 +919,26 @@ function translateToSpanish(lower, original) {
 }
 
 function translateFragmentEs(s) {
+  if (HEAD_PHRASES_ES[s]) return HEAD_PHRASES_ES[s];
   if (EXACT_NAMES[s] && EXACT_NAMES[s].es) return EXACT_NAMES[s].es.toLowerCase();
   for (const [en, es] of TERM_STEMS) {
     if (s === en) return es;
   }
   let working = s;
+  for (const [en, es] of Object.entries(HEAD_PHRASES_ES)) {
+    if (working.includes(en)) working = working.replace(en, es);
+  }
   for (const [en, es] of TERM_STEMS) {
     if (working.includes(en)) {
       working = working.replace(en, es);
     }
   }
-  // Ordinal + noun (e.g. "first rib", "fifth lumbar vertebra")
+  const isFem = /(costilla|vértebra|falange|arteria|vena|rama|tributaria|porción|cabeza|mano)/i.test(working);
+  // Ordinal + noun (e.g. "first rib", "fifth lumbar vertebra", "first lumbrical")
   for (const [ordEn, ordObj] of Object.entries(ORDINALS)) {
     const re = new RegExp(`\\b${ordEn}\\b`, 'g');
     if (re.test(working)) {
-      working = working.replace(re, ordObj.es);
+      working = working.replace(re, isFem ? ordObj.esFem : ordObj.esMasc);
     }
   }
   // Replace common modifiers if still in English
@@ -880,9 +946,35 @@ function translateFragmentEs(s) {
     const tokens = working.split(/\s+/);
     if (tokens.length >= 2) {
       const last = tokens[tokens.length - 1];
-      if ( last === 'artery' || last === 'vein' || last === 'nerve' || last === 'muscle' || last === 'bone' || last === 'ligament' || last === 'tendon' || last === 'gland' || last === 'duct' || last === 'lobe' || last === 'branch' || last === 'tributary' || last === 'trunk' || last === 'plexus' || last === 'sinus' ) {
+      if (
+        last === 'artery' ||
+        last === 'vein' ||
+        last === 'nerve' ||
+        last === 'muscle' ||
+        last === 'bone' ||
+        last === 'ligament' ||
+        last === 'tendon' ||
+        last === 'gland' ||
+        last === 'duct' ||
+        last === 'lobe' ||
+        last === 'branch' ||
+        last === 'tributary' ||
+        last === 'trunk' ||
+        last === 'plexus' ||
+        last === 'sinus' ||
+        last === 'head' ||
+        last === 'part'
+      ) {
         const headEs = WORD_MAP_ES[last] || last;
-        const mods = tokens.slice(0, -1).map((t) => WORD_MAP_ES[t] || t).join(' ');
+        const headIsFem = /^(arteria|vena|glándula|rama|tributaria|cabeza|porción)$/i.test(headEs);
+        const mods = tokens
+          .slice(0, -1)
+          .map((t) => {
+            const m = WORD_MAP_ES[t] || t;
+            if (headIsFem && m.endsWith('o')) return m.slice(0, -1) + 'a';
+            return m;
+          })
+          .join(' ');
         return `${headEs} ${mods}`;
       }
     }

@@ -9,7 +9,8 @@
     "build:models": "node --max-old-space-size=8192 tools/build-models.mjs",
     "build": "esbuild src/main.js --bundle --format=esm --minify --target=es2020 --outfile=dist/atlas.js",
     "dev": "esbuild src/main.js --bundle --format=esm --sourcemap --target=es2020 --outfile=dist/atlas.js --watch",
-    "serve": "python3 server.py"
+    "serve": "python3 server.py",
+    "test": "node --test \"tools/tests/*.test.mjs\""
   },
   "license": "SEE LICENSE IN README.md",
   "dependencies": {

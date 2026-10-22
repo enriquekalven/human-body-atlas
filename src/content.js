@@ -22,7 +22,10 @@ export const CURATED_LINKS = {
   'carotid-jugular': { parts: /carotid artery|jugular vein/i },
   'brachial-radial-vessels': { parts: /subclavian (artery|vein)|axillary (artery|vein)|brachial (artery|vein)|radial artery|ulnar artery|cephalic vein|basilic vein|median cubital vein|palmar arch/i },
   'femoral-saphenous-vessels': { parts: /iliac (artery|vein)|femoral (artery|vein)|saphenous|popliteal (artery|vein)|tibial (artery|vein)|dorsalis pedis/i },
-  skull: { groups: ['skull'] },
+  skull: {
+    groups: ['skull'],
+    exclude: /cornea|iris|sclera|lens|retina|eyeball|choroid|ciliary|lacrimal|eyelid|tarsal|conjunctiva|vitreous|aqueous/i
+  },
   'rib-cage': { groups: ['rib', 'sternum'], parts: /costal cartilage/i },
   spine: { groups: ['vertebral column'], parts: /intervertebral dis/i },
   'humerus-radius-ulna': { parts: /humerus|\bradius\b|\bulna\b|clavicle|scapula/i },
@@ -501,10 +504,17 @@ export function resolveCuratedMembers(manifest, curatedParts) {
     const members = new Set();
     for (const gname of link.groups || []) {
       const g = manifest.groups.find((x) => x.name.toLowerCase() === gname);
-      if (g) g.members.forEach((m) => members.add(m));
+      if (g) {
+        g.members.forEach((m) => {
+          const p = manifest.parts[m];
+          if (link.exclude && p && link.exclude.test(p.name)) return;
+          members.add(m);
+        });
+      }
     }
     if (link.parts) {
       manifest.parts.forEach((p, i) => {
+        if (link.exclude && link.exclude.test(p.name)) return;
         if (link.parts.test(p.name)) members.add(i);
       });
     }

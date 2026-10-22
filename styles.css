@@ -1118,32 +1118,28 @@ body.no-ui .hud-bottom {
 
   .header-actions {
     order: 2;
-    flex: 1 1 auto;
-    justify-content: flex-end;
-    gap: 0.28rem;
-    overflow-x: auto;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    overflow-x: visible;
     max-width: 100%;
-    scrollbar-width: none;
-  }
-
-  .header-actions::-webkit-scrollbar {
-    display: none;
   }
 
   .segmented {
-    padding: 0.125rem;
+    padding: 0.1rem;
   }
 
   .segmented-btn,
   .lang-segmented .segmented-btn {
-    padding: 0.24rem 0.44rem;
-    font-size: 0.72rem;
+    padding: 0.22rem 0.4rem;
+    font-size: 0.7rem;
     white-space: nowrap;
   }
 
   .ghost-btn {
-    padding: 0.28rem 0.5rem;
-    font-size: 0.72rem;
+    padding: 0.24rem 0.45rem;
+    font-size: 0.7rem;
     white-space: nowrap;
   }
 
@@ -1162,7 +1158,7 @@ body.no-ui .hud-bottom {
 
   .search-input {
     font-size: 16px;
-    padding: 0.4rem 0.7rem;
+    padding: 0.36rem 0.65rem;
   }
 
   .view-bar {
@@ -1199,9 +1195,9 @@ body.no-ui .hud-bottom {
     top: auto;
     left: 0.5rem;
     right: 0.5rem;
-    bottom: calc(4.1rem + env(safe-area-inset-bottom, 0px));
+    bottom: calc(4.55rem + env(safe-area-inset-bottom, 0px));
     width: auto;
-    max-height: 66dvh;
+    max-height: 62dvh;
     z-index: 45;
     padding: 0.75rem;
     background: var(--panel-solid);
@@ -1222,9 +1218,9 @@ body.no-ui .hud-bottom {
     top: auto;
     left: 0.5rem;
     right: 0.5rem;
-    bottom: calc(4.1rem + env(safe-area-inset-bottom, 0px));
+    bottom: calc(4.55rem + env(safe-area-inset-bottom, 0px));
     width: auto;
-    max-height: 38dvh;
+    max-height: 36dvh;
     z-index: 35;
     padding: 0.75rem 0.875rem;
     background: rgba(13, 17, 24, 0.94);

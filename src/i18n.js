@@ -24,6 +24,31 @@ import { translateAnatomyName, MULTILINGUAL_SYNONYMS } from './i18nAnatomyTransl
 export { translateAnatomyName, MULTILINGUAL_SYNONYMS };
 
 export const SUPPORTED_LANGS = ['en', 'es', 'zh', 'ja', 'ko', 'pt', 'fr', 'it'];
+export const PUBLIC_LANGS = ['en', 'es', 'zh'];
+
+export function isPreviewI18n(searchStr) {
+  try {
+    const raw =
+      searchStr !== undefined
+        ? searchStr
+        : typeof window !== 'undefined' && window.location
+          ? window.location.search
+          : '';
+    return new URLSearchParams(raw).get('preview') === 'i18n';
+  } catch (_e) {
+    return false;
+  }
+}
+
+export function getAvailableLanguages(searchStr) {
+  return isPreviewI18n(searchStr) ? SUPPORTED_LANGS : PUBLIC_LANGS;
+}
+
+export function gateLang(raw, searchStr) {
+  const norm = normalizeLang(raw);
+  const allowed = getAvailableLanguages(searchStr);
+  return allowed.includes(norm) ? norm : 'en';
+}
 
 export function normalizeLang(raw) {
   if (!raw) return 'en';
@@ -44,6 +69,8 @@ export const UI_STRINGS = {
     skipLink: 'Skip to body part details',
     canvasAria:
       'Interactive 3D human body. Drag to rotate, scroll or pinch to zoom toward the pointer, right-drag to pan, click a structure to see its name. Arrow keys rotate, plus and minus zoom.',
+    canvasAriaTouch:
+      'Interactive 3D human body. Drag with one finger to rotate, pinch with two fingers to zoom, drag with two fingers to pan, and tap any structure to see its name and details.',
     loadingTitle: 'Building the human body…',
     loadingSubDefault: 'Loading real anatomical models',
     loadingLayer: (layerName) => `Loading ${layerName}…`,
@@ -110,13 +137,22 @@ export const UI_STRINGS = {
     qualityBalanced: 'Balanced',
     qualityFast: 'Fast (older devices)',
     skinToneLabel: 'Skin tone',
-    skinToneSwatchAria: (name) => `${name} skin tone`,
+    skinToneSwatchAria: (name) => {
+      const m = { light: 'Light', medium: 'Medium', tan: 'Tan', brown: 'Brown', deep: 'Deep' };
+      return `${m[name] || name} skin tone`;
+    },
     inspectorAria: 'Selected body part',
     emptyTitle: 'Explore the body',
     emptyDesc: 'Hover over the model to see names. Click any structure — or search above — to zoom in and learn about it.',
+    emptyDescTouch: 'Tap any structure on the 3D body — or search above — to zoom in and learn about it.',
     tips: [
       { bold: 'Drag', rest: ' to rotate · ', bold2: 'Scroll', rest2: ' to zoom toward the pointer' },
       { bold: 'Right-drag', rest: ' (or two fingers) to pan' },
+      { rest: 'Pick a system above: skin, muscles, skeleton, veins, organs, nerves' }
+    ],
+    tipsTouch: [
+      { bold: '1-finger drag', rest: ' to rotate · ', bold2: 'Pinch', rest2: ' to zoom' },
+      { bold: '2-finger drag', rest: ' to pan · ', bold2: 'Tap', rest2: ' any part to inspect' },
       { rest: 'Pick a system above: skin, muscles, skeleton, veins, organs, nerves' }
     ],
     readAloudBtn: '🔊 Read aloud',
@@ -173,6 +209,8 @@ export const UI_STRINGS = {
     skipLink: 'Saltar a los detalles de la estructura anatómica',
     canvasAria:
       'Cuerpo humano 3D interactivo. Arrastra para rotar, usa la rueda o pellizca para acercar hacia el cursor, arrastra con clic derecho para desplazar y haz clic en una estructura para ver su nombre.',
+    canvasAriaTouch:
+      'Cuerpo humano 3D interactivo. Arrastra con un dedo para rotar, pellizca con dos dedos para acercar, arrastra con dos dedos para desplazar y toca cualquier estructura para ver su nombre y detalles.',
     loadingTitle: 'Construyendo el cuerpo humano…',
     loadingSubDefault: 'Cargando modelos anatómicos reales',
     loadingLayer: (layerName) => `Cargando ${layerName}…`,
@@ -239,13 +277,22 @@ export const UI_STRINGS = {
     qualityBalanced: 'Equilibrada',
     qualityFast: 'Rápida (dispositivos antiguos)',
     skinToneLabel: 'Tono de piel',
-    skinToneSwatchAria: (name) => `Tono de piel ${name}`,
+    skinToneSwatchAria: (name) => {
+      const m = { light: 'claro', medium: 'medio', tan: 'bronceado', brown: 'moreno', deep: 'oscuro' };
+      return `Tono de piel ${m[name] || name}`;
+    },
     inspectorAria: 'Parte del cuerpo seleccionada',
     emptyTitle: 'Explora el cuerpo humano',
     emptyDesc: 'Pasa el cursor sobre el modelo para ver los nombres. Haz clic en cualquier estructura — o busca arriba — para acercarte y aprender sobre ella.',
+    emptyDescTouch: 'Toca cualquier estructura en el modelo 3D — o busca arriba — para acercarte y aprender sobre ella.',
     tips: [
       { bold: 'Arrastra', rest: ' para rotar · ', bold2: 'Rueda', rest2: ' para acercar hacia el cursor' },
       { bold: 'Clic derecho y arrastra', rest: ' (o dos dedos) para desplazar' },
+      { rest: 'Elige un sistema arriba: piel, músculos, esqueleto, venas, órganos, nervios' }
+    ],
+    tipsTouch: [
+      { bold: 'Arrastra con 1 dedo', rest: ' para rotar · ', bold2: 'Pellizca', rest2: ' para acercar' },
+      { bold: 'Arrastra con 2 dedos', rest: ' para desplazar · ', bold2: 'Toca', rest2: ' una parte para ver detalles' },
       { rest: 'Elige un sistema arriba: piel, músculos, esqueleto, venas, órganos, nervios' }
     ],
     readAloudBtn: '🔊 Leer en voz alta',
@@ -302,6 +349,8 @@ export const UI_STRINGS = {
     skipLink: '跳转到解剖结构详情',
     canvasAria:
       '交互式 3D 人体模型。拖动旋转，滚轮或双指缩放至指针位置，右键拖动平移，点击任何解剖结构查看名称。方向键旋转，加减号缩放。',
+    canvasAriaTouch:
+      '交互式 3D 人体模型。单指拖动旋转，双指捏合缩放，双指拖动平移，轻触任意解剖结构查看名称与详情。',
     loadingTitle: '正在构建人体 3D 模型…',
     loadingSubDefault: '正在加载真实解剖结构模型',
     loadingLayer: (layerName) => `正在加载 ${layerName}…`,
@@ -368,13 +417,22 @@ export const UI_STRINGS = {
     qualityBalanced: '均衡模式',
     qualityFast: '流畅模式（适合旧设备）',
     skinToneLabel: '肤色',
-    skinToneSwatchAria: (name) => `${name} 肤色`,
+    skinToneSwatchAria: (name) => {
+      const m = { light: '浅', medium: '中等', tan: '小麦', brown: '棕褐', deep: '深' };
+      return `${m[name] || name}肤色`;
+    },
     inspectorAria: '选中的身体部位',
     emptyTitle: '探索人体奥秘',
     emptyDesc: '将鼠标悬停在模型上可查看名称。点击任意结构（或在上方搜索）即可聚焦放大并深入了解。',
+    emptyDescTouch: '轻触 3D 模型上的任意结构（或在上方搜索），即可聚焦放大并深入了解。',
     tips: [
       { bold: '拖动', rest: ' 旋转视角 · ', bold2: '滚轮', rest2: ' 向光标位置缩放' },
       { bold: '右键拖动', rest: '（或双指滑动）平移视图' },
+      { rest: '在上方切换系统视图：皮肤、肌肉、骨骼、血管、器官、神经' }
+    ],
+    tipsTouch: [
+      { bold: '单指拖动', rest: ' 旋转视角 · ', bold2: '双指捏合', rest2: ' 缩放' },
+      { bold: '双指拖动', rest: ' 平移视图 · ', bold2: '轻触', rest2: ' 任意部位查看详情' },
       { rest: '在上方切换系统视图：皮肤、肌肉、骨骼、血管、器官、神经' }
     ],
     readAloudBtn: '🔊 语音朗读',
@@ -431,6 +489,8 @@ export const UI_STRINGS = {
     skipLink: '部位の詳細へスキップ',
     canvasAria:
       'インタラクティブな 3D 人体モデル。ドラッグで回転、スクロールまたはピンチで拡大・縮小、右ドラッグで移動、構造をクリックすると名前と詳細を表示します。',
+    canvasAriaTouch:
+      'インタラクティブな 3D 人体モデル。1本指のドラッグで回転、ピンチで拡大・縮小、2本指のドラッグで移動、部位をタップすると名前と詳細を表示します。',
     loadingTitle: '3D 人体モデルを構築中…',
     loadingSubDefault: 'リアルな解剖モデルを読み込んでいます',
     loadingLayer: (layerName) => `${layerName}を読み込み中…`,
@@ -497,13 +557,22 @@ export const UI_STRINGS = {
     qualityBalanced: 'バランス',
     qualityFast: '高速（軽量モード）',
     skinToneLabel: '肌の色調',
-    skinToneSwatchAria: (name) => `${name}の肌色`,
+    skinToneSwatchAria: (name) => {
+      const m = { light: '明るい', medium: '中間', tan: '小麦色', brown: '褐色', deep: '濃い' };
+      return `${m[name] || name}の肌色`;
+    },
     inspectorAria: '選択された部位の詳細',
     emptyTitle: '人体を探検しよう',
     emptyDesc: 'モデルにカーソルを合わせるかタップすると名前が表示されます。部位をクリックするか上部で検索すると、拡大して詳しく学べます。',
+    emptyDescTouch: '3Dモデルの部位をタップするか上部で検索すると、拡大して詳しく学べます。',
     tips: [
       { bold: 'ドラッグ', rest: 'で回転 · ', bold2: 'スクロール／ピンチ', rest2: 'でズーム' },
       { bold: '右ドラッグ', rest: '（または2本指）で平行移動' },
+      { rest: '上部から系統を選択：皮膚、筋肉、骨格、血管、内臓、神経' }
+    ],
+    tipsTouch: [
+      { bold: '1本指ドラッグ', rest: 'で回転 · ', bold2: 'ピンチ', rest2: 'でズーム' },
+      { bold: '2本指ドラッグ', rest: 'で平行移動 · ', bold2: 'タップ', rest2: 'で部位を詳しく表示' },
       { rest: '上部から系統を選択：皮膚、筋肉、骨格、血管、内臓、神経' }
     ],
     readAloudBtn: '🔊 音声で読み上げる',
@@ -560,6 +629,8 @@ export const UI_STRINGS = {
     skipLink: '신체 부위 상세 정보로 건너뛰기',
     canvasAria:
       '인터랙티브 3D 인체 모델. 드래그하여 회전하고, 스크롤이나 두 손가락 핀치로 확대/축소하며, 우클릭 드래그로 이동하고, 구조물을 클릭하여 이름과 설명을 확인하세요.',
+    canvasAriaTouch:
+      '인터랙티브 3D 인체 모델. 한 손가락 드래그로 회전하고, 두 손가락 핀치로 확대/축소하며, 두 손가락 드래그로 이동하고, 구조물을 탭하여 이름과 설명을 확인하세요.',
     loadingTitle: '3D 인체 모델을 구성하는 중…',
     loadingSubDefault: '실제 해부학 모델을 불러오고 있습니다',
     loadingLayer: (layerName) => `${layerName} 불러오는 중…`,
@@ -626,13 +697,22 @@ export const UI_STRINGS = {
     qualityBalanced: '균형 모드',
     qualityFast: '빠른 모드 (저사양 기기)',
     skinToneLabel: '피부 톤',
-    skinToneSwatchAria: (name) => `${name} 피부 톤`,
+    skinToneSwatchAria: (name) => {
+      const m = { light: '밝은', medium: '중간', tan: '태닝', brown: '갈색', deep: '어두운' };
+      return `${m[name] || name} 피부 톤`;
+    },
     inspectorAria: '선택한 신체 부위 상세 정보',
     emptyTitle: '인체 탐험하기',
     emptyDesc: '모델에 마우스를 올리거나 탭하면 이름이 표시됩니다. 구조물을 클릭하거나 상단에서 검색하여 확대하고 자세히 알아보세요.',
+    emptyDescTouch: '3D 모델의 구조물을 탭하거나 상단에서 검색하여 확대하고 자세히 알아보세요.',
     tips: [
       { bold: '드래그', rest: '하여 회전 · ', bold2: '스크롤/핀치', rest2: '로 확대·축소' },
       { bold: '우클릭 드래그', rest: '(또는 두 손가락)로 화면 이동' },
+      { rest: '상단에서 계통 선택: 피부, 근육, 골격, 혈관, 기관, 신경' }
+    ],
+    tipsTouch: [
+      { bold: '한 손가락 드래그', rest: '로 회전 · ', bold2: '두 손가락 핀치', rest2: '로 확대·축소' },
+      { bold: '두 손가락 드래그', rest: '로 화면 이동 · ', bold2: '탭', rest2: '하여 상세 정보 확인' },
       { rest: '상단에서 계통 선택: 피부, 근육, 골격, 혈관, 기관, 신경' }
     ],
     readAloudBtn: '🔊 음성으로 듣기',
@@ -689,6 +769,8 @@ export const UI_STRINGS = {
     skipLink: 'Pular para os detalhes da estrutura anatômica',
     canvasAria:
       'Corpo humano 3D interativo. Arraste para girar, role ou faça pinça para aproximar, arraste com o botão direito para mover e clique em uma estrutura para ver seu nome.',
+    canvasAriaTouch:
+      'Corpo humano 3D interativo. Arraste com um dedo para girar, faça pinça com dois dedos para aproximar, arraste com dois dedos para mover e toque em qualquer estrutura para ver seu nome e detalhes.',
     loadingTitle: 'Construindo o corpo humano…',
     loadingSubDefault: 'Carregando modelos anatômicos reais',
     loadingLayer: (layerName) => `Carregando ${layerName}…`,
@@ -755,13 +837,22 @@ export const UI_STRINGS = {
     qualityBalanced: 'Equilibrada',
     qualityFast: 'Rápida (dispositivos antigos)',
     skinToneLabel: 'Tom de pele',
-    skinToneSwatchAria: (name) => `Tom de pele ${name}`,
+    skinToneSwatchAria: (name) => {
+      const m = { light: 'claro', medium: 'médio', tan: 'bronzeado', brown: 'moreno', deep: 'escuro' };
+      return `Tom de pele ${m[name] || name}`;
+    },
     inspectorAria: 'Parte do corpo selecionada',
     emptyTitle: 'Explore o corpo humano',
     emptyDesc: 'Passe o cursor ou toque no modelo para ver os nomes. Clique em qualquer estrutura — ou busque acima — para aproximar e aprender sobre ela.',
+    emptyDescTouch: 'Toque em qualquer estrutura no modelo 3D — ou busque acima — para aproximar e aprender sobre ela.',
     tips: [
       { bold: 'Arraste', rest: ' para girar · ', bold2: 'Role/Pinça', rest2: ' para dar zoom' },
       { bold: 'Arraste com botão direito', rest: ' (ou dois dedos) para mover' },
+      { rest: 'Escolha um sistema acima: pele, músculos, esqueleto, vasos, órgãos, nervos' }
+    ],
+    tipsTouch: [
+      { bold: 'Arraste com 1 dedo', rest: ' para girar · ', bold2: 'Pinça', rest2: ' para dar zoom' },
+      { bold: 'Arraste com 2 dedos', rest: ' para mover · ', bold2: 'Toque', rest2: ' em uma parte para inspecionar' },
       { rest: 'Escolha um sistema acima: pele, músculos, esqueleto, vasos, órgãos, nervos' }
     ],
     readAloudBtn: '🔊 Ouvir explicação',
@@ -818,6 +909,8 @@ export const UI_STRINGS = {
     skipLink: 'Aller aux détails de la structure anatomique',
     canvasAria:
       'Corps humain 3D interactif. Faites glisser pour pivoter, défilez ou pincez pour zoomer, glissez avec le clic droit pour déplacer, et cliquez sur une structure pour afficher son nom.',
+    canvasAriaTouch:
+      'Corps humain 3D interactif. Faites glisser un doigt pour pivoter, pincez pour zoomer, glissez à deux doigts pour déplacer et touchez une structure pour afficher son nom.',
     loadingTitle: 'Construction du corps humain…',
     loadingSubDefault: 'Chargement des modèles anatomiques réels',
     loadingLayer: (layerName) => `Chargement : ${layerName}…`,
@@ -884,13 +977,22 @@ export const UI_STRINGS = {
     qualityBalanced: 'Équilibrée',
     qualityFast: 'Rapide (appareils anciens)',
     skinToneLabel: 'Teint de peau',
-    skinToneSwatchAria: (name) => `Teint de peau ${name}`,
+    skinToneSwatchAria: (name) => {
+      const m = { Light: 'Clair', Medium: 'Moyen', Tan: 'Hâlé', 'Warm Brown': 'Brun chaud', Deep: 'Foncé' };
+      return `Teint de peau ${m[name] || name}`;
+    },
     inspectorAria: 'Partie du corps sélectionnée',
     emptyTitle: 'Explorez le corps humain',
     emptyDesc: 'Survolez ou touchez le modèle pour voir les noms. Cliquez sur une structure — ou recherchez ci-dessus — pour zoomer et la découvrir.',
+    emptyDescTouch: 'Touchez une structure — ou recherchez ci-dessus — pour zoomer et la découvrir.',
     tips: [
       { bold: 'Glisser', rest: ' pour pivoter · ', bold2: 'Molette/Pincer', rest2: ' pour zoomer' },
       { bold: 'Clic droit glisser', rest: ' (ou deux doigts) pour déplacer' },
+      { rest: 'Choisissez un système en haut : peau, muscles, squelette, vaisseaux, organes, nerfs' }
+    ],
+    tipsTouch: [
+      { bold: 'Glisser un doigt', rest: ' pour pivoter · ', bold2: 'Pincer', rest2: ' pour zoomer' },
+      { bold: 'Glisser à deux doigts', rest: ' pour déplacer · ', bold2: 'Toucher', rest2: ' pour sélectionner' },
       { rest: 'Choisissez un système en haut : peau, muscles, squelette, vaisseaux, organes, nerfs' }
     ],
     readAloudBtn: '🔊 Lire à voix haute',
@@ -947,6 +1049,8 @@ export const UI_STRINGS = {
     skipLink: 'Salta ai dettagli della struttura anatomica',
     canvasAria:
       'Corpo umano 3D interattivo. Trascina per ruotare, scorri o pizzica per ingrandire, trascina col tasto destro per spostare e fai clic su una struttura per vederne il nome.',
+    canvasAriaTouch:
+      'Corpo umano 3D interattivo. Trascina con un dito per ruotare, pizzica per ingrandire, trascina con due dita per spostare e tocca una struttura per vederne il nome.',
     loadingTitle: 'Costruzione del corpo umano…',
     loadingSubDefault: 'Caricamento dei modelli anatomici reali',
     loadingLayer: (layerName) => `Caricamento ${layerName}…`,
@@ -1013,13 +1117,22 @@ export const UI_STRINGS = {
     qualityBalanced: 'Bilanciata',
     qualityFast: 'Veloce (dispositivi meno recenti)',
     skinToneLabel: 'Tonalità della pelle',
-    skinToneSwatchAria: (name) => `Tonalità della pelle ${name}`,
+    skinToneSwatchAria: (name) => {
+      const m = { Light: 'Chiara', Medium: 'Media', Tan: 'Abbronzata', 'Warm Brown': 'Bruno caldo', Deep: 'Scura' };
+      return `Tonalità della pelle ${m[name] || name}`;
+    },
     inspectorAria: 'Parte del corpo selezionata',
     emptyTitle: 'Esplora il corpo umano',
     emptyDesc: 'Passa il cursore o tocca il modello per vedere i nomi. Fai clic su qualsiasi struttura — o cerca in alto — per ingrandire e approfondire.',
+    emptyDescTouch: 'Tocca qualsiasi struttura — o cerca in alto — per ingrandire e approfondire.',
     tips: [
       { bold: 'Trascina', rest: ' per ruotare · ', bold2: 'Scorri/Pizzica', rest2: ' per ingrandire' },
       { bold: 'Trascina col destro', rest: ' (o due dita) per spostare' },
+      { rest: 'Scegli un sistema in alto: pelle, muscoli, scheletro, vasi, organi, nervi' }
+    ],
+    tipsTouch: [
+      { bold: 'Trascina con un dito', rest: ' per ruotare · ', bold2: 'Pizzica', rest2: ' per ingrandire' },
+      { bold: 'Trascina con due dita', rest: ' per spostare · ', bold2: 'Tocca', rest2: ' per selezionare' },
       { rest: 'Scegli un sistema in alto: pelle, muscoli, scheletro, vasi, organi, nervi' }
     ],
     readAloudBtn: '🔊 Leggi ad alta voce',

@@ -19,6 +19,7 @@ import {
   ROUGHNESS_BODY,
   NORMAL_BODY,
   EMISSIVE_BODY,
+  PHYSICAL_BODY,
   ALPHA_BODY
 } from './shaderChunks.js';
 
@@ -104,6 +105,7 @@ export const SKIN_TONES = {
 export class TissueMaterialLibrary {
   constructor() {
     // Uniforms shared by every tissue material (updated once per frame).
+    const tendonCol = new THREE.Color(TISSUES.tendon.color);
     this.shared = {
       uFlowTime: { value: 0 },
       uBeat: { value: 0 },
@@ -114,7 +116,17 @@ export class TissueMaterialLibrary {
       uFlush: { value: 0 },
       // Lip center (xyz + active flag w) & vermilion tint rendered smoothly onto the skin surface.
       uLipPos: { value: new THREE.Vector4(0, 1.535, 0.088, 0) },
-      uLipColor: { value: lipColorFor(TISSUES.skin.color) }
+      uLipColor: { value: lipColorFor(TISSUES.skin.color) },
+      uTendonLook: { value: new THREE.Vector4(tendonCol.r, tendonCol.g, tendonCol.b, TISSUES.tendon.roughness) },
+      uTendonCoat: {
+        value: new THREE.Vector4(
+          TISSUES.tendon.clearcoat,
+          TISSUES.tendon.clearcoatRoughness,
+          TISSUES.tendon.sheen,
+          TISSUES.tendon.sheenRoughness
+        )
+      },
+      uTendonFocus: { value: 0 }
     };
     this.materials = new Map(); // key -> { base, variants: {hover, selected, ghost}, def, layer }
     this.byLayer = new Map();
@@ -172,6 +184,8 @@ export class TissueMaterialLibrary {
     if (def.flow) mat.defines.TISSUE_FLOW = '';
     if (def.sss && SSS_LIGHTS_CHUNK) mat.defines.TISSUE_SSS = '';
     if (def === TISSUES.skin) mat.defines.TISSUE_SKIN = '';
+    if (def === TISSUES.muscle) mat.defines.TISSUE_TENDON_BLEND = '';
+    if (def === TISSUES.tendon || def === TISSUES.ligament) mat.defines.TISSUE_TENDON_PART = '';
 
     const uniforms = {
       uBumpStrength: { value: (def.bumpStrength ?? 0) * this.bumpScale },
@@ -203,6 +217,7 @@ export class TissueMaterialLibrary {
         .replace('#include <color_fragment>', `#include <color_fragment>\n${COLOR_BODY}`)
         .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${ROUGHNESS_BODY}`)
         .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${NORMAL_BODY}`)
+        .replace('#include <lights_physical_fragment>', `#include <lights_physical_fragment>\n${PHYSICAL_BODY}`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\n${EMISSIVE_BODY}`)
         .replace('#include <opaque_fragment>', `${ALPHA_BODY}\n#include <opaque_fragment>`);
       // Same source for every tissue (the wrap is #ifdef TISSUE_SSS), so one cache key still holds.
@@ -211,6 +226,10 @@ export class TissueMaterialLibrary {
     };
     mat.customProgramCacheKey = () => 'anatomy-tissue-v2';
     return mat;
+  }
+
+  setTendonFocus(val) {
+    this.shared.uTendonFocus.value = val;
   }
 
   setLayerOpacity(layer, opacity) {
