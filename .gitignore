@@ -1,0 +1,10 @@
+node_modules/
+tools/raw/
+tools/cache/
+.DS_Store
+.firebaserc
+.firebase/
+firebase-debug.log*
+*.map
+*.log
+.env*

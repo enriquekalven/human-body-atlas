@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data: https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com; media-src 'self' data: blob:; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'none';"
+  />
+  <meta name="description" content="Realistic interactive 3D human anatomy: skin, muscles, skeleton, organs, veins, arteries and live blood flow, with names for 2,200+ structures." />
+  <title>Human Body 3D Atlas — Realistic Interactive Anatomy</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="./styles.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-M5GCYZ8X1R"></script>
+</head>
+<body>
+  <a id="skip-link" href="#inspector-panel" class="skip-link">Skip to body part details</a>
+
+  <canvas
+    id="anatomy-canvas"
+    tabindex="0"
+    aria-label="Interactive 3D human body. Drag to rotate, scroll or pinch to zoom toward the pointer, right-drag to pan, click a structure to see its name. Arrow keys rotate, plus and minus zoom."
+  ></canvas>
+
+  <div id="label-layer" class="label-layer" aria-hidden="true"></div>
+  <div id="hover-tooltip" class="hover-tooltip hidden" role="tooltip"></div>
+
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="loading-card">
+      <div id="loading-title" class="loading-title">Building the human body…</div>
+      <div id="loading-sub" class="loading-sub">Loading real anatomical models</div>
+      <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+      <div id="loading-meta" class="loading-meta">0%</div>
+    </div>
+  </div>
+
+  <header class="hud-header">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div>
+        <h1 id="brand-title" class="brand-title">Human Body 3D Atlas</h1>
+        <p id="brand-subtitle" class="brand-subtitle">Female &amp; Male · 2,225 named structures</p>
+      </div>
+    </div>
+
+    <div class="search" role="search">
+      <label id="search-label" for="search-input" class="sr-only">Search any body part</label>
+      <input
+        id="search-input"
+        class="search-input"
+        type="search"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Search any body part — heart, femur, uterus, aorta, biceps…"
+        role="combobox"
+        aria-expanded="false"
+        aria-controls="search-results"
+        aria-autocomplete="list"
+      />
+      <ul id="search-results" class="search-results hidden" role="listbox" aria-label="Matching body parts"></ul>
+    </div>
+
+    <div class="header-actions">
+      <div id="sex-group" class="segmented" role="group" aria-label="Body anatomy">
+        <button id="btn-female" type="button" class="segmented-btn" aria-pressed="false">Female</button>
+        <button id="btn-male" type="button" class="segmented-btn is-active" aria-pressed="true">Male</button>
+      </div>
+      <div id="audience-group" class="segmented" role="group" aria-label="Explanation level">
+        <button id="btn-kids" type="button" class="segmented-btn is-active" aria-pressed="true">Kids</button>
+        <button id="btn-pro" type="button" class="segmented-btn" aria-pressed="false">Clinical</button>
+      </div>
+      <div id="lang-group" class="segmented lang-segmented" role="group" aria-label="Language">
+        <button id="btn-lang-en" type="button" class="segmented-btn is-active" data-lang="en" aria-pressed="true" title="English">EN</button>
+        <button id="btn-lang-es" type="button" class="segmented-btn" data-lang="es" aria-pressed="false" title="Español">ES</button>
+        <button id="btn-lang-zh" type="button" class="segmented-btn" data-lang="zh" aria-pressed="false" title="中文 (简体)">中文</button>
+      </div>
+      <button id="btn-quiz" type="button" class="ghost-btn">Quiz</button>
+    </div>
+  </header>
+
+  <nav id="view-bar" class="view-bar" aria-label="Body system views"></nav>
+
+  <aside id="left-panel" class="hud-left-panel" aria-label="Display controls">
+    <section class="panel-card">
+      <h2 id="layers-title" class="panel-title">Layers</h2>
+      <p id="layers-hint" class="panel-hint">Fade any layer to see what's underneath.</p>
+      <div id="layer-sliders" class="layer-sliders"></div>
+    </section>
+
+    <section class="panel-card">
+      <h2 id="heart-panel-title" class="panel-title">Heart &amp; blood flow</h2>
+      <div class="slider-row">
+        <label id="heart-rate-label" for="heart-rate">Heart rate</label>
+        <output id="heart-rate-out" for="heart-rate">72 bpm</output>
+      </div>
+      <input id="heart-rate" type="range" min="40" max="180" step="1" value="72" />
+      <div class="legend">
+        <span class="legend-item"><span class="swatch swatch-artery"></span><span id="legend-artery-text">Arteries (oxygen-rich)</span></span>
+        <span class="legend-item"><span class="swatch swatch-vein"></span><span id="legend-vein-text">Veins (returning)</span></span>
+      </div>
+      <button id="btn-flow" type="button" class="toggle-btn is-on" aria-pressed="true">Blood flow animation</button>
+    </section>
+
+    <section class="panel-card">
+      <h2 id="display-panel-title" class="panel-title">Display</h2>
+      <div class="toggle-grid">
+        <button id="btn-labels" type="button" class="toggle-btn" aria-pressed="false">Labels</button>
+        <button id="btn-isolate" type="button" class="toggle-btn" aria-pressed="false">Isolate selection</button>
+        <button id="btn-rotate" type="button" class="toggle-btn" aria-pressed="false">Auto-rotate</button>
+        <button id="btn-reset" type="button" class="toggle-btn">Reset view</button>
+      </div>
+      <div class="slider-row">
+        <label id="quality-label" for="quality-select">Render quality</label>
+      </div>
+      <select id="quality-select" class="select">
+        <option id="quality-opt-high" value="high">High (soft shadows + ambient occlusion)</option>
+        <option id="quality-opt-balanced" value="balanced">Balanced</option>
+        <option id="quality-opt-fast" value="fast">Fast (older devices)</option>
+      </select>
+      <div class="slider-row"><span id="skin-tone-label">Skin tone</span></div>
+      <div id="skin-tones" class="skin-tones" role="group" aria-label="Skin tone"></div>
+    </section>
+  </aside>
+
+  <aside id="inspector-panel" class="hud-right-panel" aria-label="Selected body part" aria-live="polite">
+    <div id="inspector-empty" class="inspector-empty">
+      <h2 id="inspector-empty-title">Explore the body</h2>
+      <p id="inspector-empty-desc">Hover over the model to see names. Click any structure — or search above — to zoom in and learn about it.</p>
+      <ul id="inspector-tips" class="tips">
+        <li><strong>Drag</strong> to rotate · <strong>Scroll</strong> to zoom toward the pointer</li>
+        <li><strong>Right-drag</strong> (or two fingers) to pan</li>
+        <li>Pick a system above: skin, muscles, skeleton, veins, organs, nerves</li>
+      </ul>
+    </div>
+    <div id="inspector-content" class="inspector-content hidden">
+      <div class="inspector-top">
+        <span id="inspector-badge" class="badge">Muscular system</span>
+        <button id="btn-speak" type="button" class="icon-btn" aria-label="Read aloud">🔊 Read aloud</button>
+      </div>
+      <h2 id="inspector-title" class="inspector-title"></h2>
+      <p id="inspector-subtitle" class="inspector-subtitle"></p>
+      <div class="inspector-actions">
+        <button id="btn-zoom-part" type="button" class="primary-btn">Zoom to it</button>
+        <button id="btn-isolate-part" type="button" class="secondary-btn">Show only this</button>
+        <button id="btn-clear" type="button" class="secondary-btn">Clear</button>
+      </div>
+      <div id="inspector-body" class="inspector-body"></div>
+    </div>
+  </aside>
+
+  <footer class="hud-bottom">
+    <button id="btn-zoom-out" type="button" class="zoom-btn" aria-label="Zoom out">−</button>
+    <label id="zoom-label" for="zoom-slider" class="sr-only">Zoom</label>
+    <input id="zoom-slider" type="range" min="0" max="1" step="0.001" value="0" />
+    <button id="btn-zoom-in" type="button" class="zoom-btn" aria-label="Zoom in">+</button>
+    <p id="footer-attribution" class="attribution">
+      3D anatomy: BodyParts3D © DBCLS &amp; NIH HuBMAP Human Reference Atlas (Visible Human Female), CC BY 4.0
+    </p>
+  </footer>
+
+  <div id="quiz-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="quiz-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="quiz-title">Anatomy quiz</h2>
+        <button id="btn-quiz-close" type="button" class="icon-btn" aria-label="Close quiz">Close</button>
+      </div>
+      <div id="quiz-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="error-banner" class="error-banner hidden" role="alert"></div>
+
+  <script type="module" src="./dist/atlas.js"></script>
+</body>
+</html>
