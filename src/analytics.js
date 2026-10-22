@@ -112,3 +112,12 @@ export function trackLanguageSwitch({ fromLanguage, toLanguage }) {
     to_language: String(toLanguage || 'en')
   });
 }
+
+export function trackDanceToggle({ enabled, sex, viewId, language }) {
+  trackEvent('toggle_dance_mode', {
+    dance_enabled: Boolean(enabled),
+    sex: String(sex || 'male'),
+    view_id: String(viewId || 'muscles'),
+    language: String(language || 'en')
+  });
+}

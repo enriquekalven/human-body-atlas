@@ -23,6 +23,8 @@ export const BUMP_TYPES = {
 export const VERTEX_HEADER = /* glsl */ `
 varying vec3 vWPos;
 varying float vSeed;
+uniform float uDanceMix;
+uniform float uDancePhase;
 #ifdef TISSUE_FIBER
 attribute vec3 fiberDir;
 varying vec3 vFiber;
@@ -32,10 +34,138 @@ varying vec3 vFiber;
 attribute float _tendon;
 varying float vTendon;
 #endif
+
+vec3 tx_rotX(vec3 v, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
+}
+vec3 tx_rotY(vec3 v, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(v.x * c + v.z * s, v.y, -v.x * s + v.z * c);
+}
+vec3 tx_rotZ(vec3 v, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(v.x * c - v.y * s, v.x * s + v.y * c, v.z);
+}
+
+vec3 tx_danceTransform(vec3 restW, inout vec3 nrm) {
+  if (uDanceMix <= 0.0001) return restW;
+  float t = uDancePhase;
+  float groove = sin(t * 0.5);
+  float beatBounce = 0.5 - 0.5 * cos(t);
+  float pulse2 = sin(t);
+  float phrase = 0.5 + 0.5 * sin(t * 0.125);
+
+  vec3 p = restW;
+  vec3 dN = nrm;
+
+  // 1. Arms & forearms articulated around anatomical elbow and upper-arm pivots
+  float side = restW.x >= 0.0 ? 1.0 : -1.0;
+  #ifdef TISSUE_GARMENT
+  float armW = 0.0;
+  #else
+  float gapLo = mix(0.1735, 0.1520, smoothstep(0.92, 1.04, restW.y));
+  float gapHi = mix(0.2100, 0.1590, smoothstep(0.90, 1.10, restW.y));
+  float armW = smoothstep(gapLo, gapHi, abs(restW.x))
+    * smoothstep(0.62, 0.66, restW.y)
+    * smoothstep(1.25, 1.15, restW.y);
+  #endif
+  float forearmW = armW * smoothstep(1.11, 1.01, restW.y);
+
+  if (forearmW > 0.0001) {
+    vec3 elbowPivot = vec3(side * 0.210, 1.06, -0.015);
+    float armBeat = sin(t * 0.5 + side * 1.5707963);
+    float elbowPitch = -forearmW * (0.68 + 0.42 * (0.5 + 0.5 * armBeat) + 0.14 * pulse2);
+    float elbowYaw = forearmW * side * (0.22 + 0.15 * groove * side);
+    vec3 relE = p - elbowPivot;
+    relE = tx_rotY(tx_rotX(relE, elbowPitch), elbowYaw);
+    p = elbowPivot + relE;
+    dN = tx_rotY(tx_rotX(dN, elbowPitch), elbowYaw);
+  }
+
+  if (armW > 0.0001) {
+    vec3 shoulderPivot = vec3(side * 0.184, 1.195, -0.015);
+    float shAbduct = armW * side * (0.34 + 0.32 * (0.5 + 0.5 * sin(t * 0.5 + side * 1.2)) + 0.18 * phrase);
+    float shFlex = armW * (-0.28 - 0.36 * sin(t * 0.5 + side * 1.5707963) + 0.12 * cos(t));
+    vec3 relS = p - shoulderPivot;
+    relS = tx_rotX(tx_rotZ(relS, shAbduct), shFlex);
+    p = shoulderPivot + relS;
+    dN = tx_rotX(tx_rotZ(dN, shAbduct), shFlex);
+  }
+
+  // 2. Head & neck bob, tilt, and counter-yaw
+  float headW = smoothstep(1.43, 1.52, restW.y) * (1.0 - armW);
+  if (headW > 0.0001) {
+    vec3 neckPivot = vec3(0.0, 1.46, -0.01);
+    float headPitch = headW * (0.12 * sin(t - 0.25));
+    float headRoll = headW * (0.13 * sin(t * 0.5 + 0.6));
+    float headYaw = headW * (-0.12 * groove);
+    vec3 relH = p - neckPivot;
+    relH = tx_rotZ(tx_rotY(tx_rotX(relH, headPitch), headYaw), headRoll);
+    p = neckPivot + relH;
+    dN = tx_rotZ(tx_rotY(tx_rotX(dN, headPitch), headYaw), headRoll);
+  }
+
+  // 3. Spine contrapposto tilt, axial twist, and chest pop
+  float spineW = smoothstep(0.86, 1.26, restW.y);
+  if (spineW > 0.0001) {
+    vec3 lumbarPivot = vec3(0.0, 0.90, -0.01);
+    float spineRoll = spineW * (-0.12 * groove);
+    float spineYaw = spineW * (0.26 * sin(t * 0.5 + 0.4));
+    float spinePitch = spineW * (0.07 * sin(t + 0.2));
+    vec3 relT = p - lumbarPivot;
+    relT = tx_rotZ(tx_rotY(tx_rotX(relT, spinePitch), spineYaw), spineRoll);
+    p = lumbarPivot + relT;
+    dN = tx_rotZ(tx_rotY(tx_rotX(dN, spinePitch), spineYaw), spineRoll);
+  }
+
+  // 4. Pelvis lateral sway, vertical knee bounce, and alternating foot tap
+  float hipW = smoothstep(0.05, 0.86, restW.y);
+  float hipSwayX = 0.056 * groove * hipW;
+  float hipSwayZ = 0.022 * pulse2 * hipW * (1.0 - 0.65 * spineW);
+  float bounceY = -0.040 * beatBounce * hipW;
+
+  float legSide = clamp(restW.x / 0.035, -1.0, 1.0);
+  float activeLeg = max(0.0, groove * legSide);
+  float kneeBell = sin(clamp((restW.y - 0.04) / 0.84, 0.0, 1.0) * 3.14159265);
+  float legMask = 1.0 - smoothstep(0.84, 0.90, restW.y);
+  float kneeZ = kneeBell * legMask * (0.048 * beatBounce + 0.045 * activeLeg);
+
+  float footMask = smoothstep(0.36, 0.04, restW.y);
+  float footLiftY = footMask * 0.030 * activeLeg * activeLeg * (0.5 + 0.5 * pulse2);
+  float footStepZ = footMask * 0.028 * activeLeg * (0.5 + 0.5 * pulse2);
+
+  p.x += hipSwayX;
+  p.y += bounceY + footLiftY;
+  p.z += hipSwayZ + kneeZ + footStepZ;
+
+  float mixAmt = smoothstep(0.0, 1.0, clamp(uDanceMix, 0.0, 1.0));
+  nrm = normalize(mix(nrm, dN, mixAmt));
+  return mix(restW, p, mixAmt);
+}
+`;
+
+export const DANCE_NORMAL_VERTEX = /* glsl */ `
+if (uDanceMix > 0.0001) {
+  vec3 txRestNPos = (modelMatrix * vec4(position, 1.0)).xyz;
+  tx_danceTransform(txRestNPos, objectNormal);
+}
+`;
+
+export const DANCE_VERTEX = /* glsl */ `
+vec4 txWorldPos = modelMatrix * vec4(transformed, 1.0);
+vec3 txRestWPos = txWorldPos.xyz;
+if (uDanceMix > 0.0001) {
+  vec3 txDummyN = vec3(0.0, 1.0, 0.0);
+  txWorldPos.xyz = tx_danceTransform(txRestWPos, txDummyN);
+  mvPosition = viewMatrix * txWorldPos;
+  gl_Position = projectionMatrix * mvPosition;
+}
 `;
 
 export const VERTEX_BODY = /* glsl */ `
-vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+${DANCE_VERTEX}
+vWPos = txRestWPos;
 vSeed = fract(sin(dot(modelMatrix[3].xyz, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
 #ifdef TISSUE_FIBER
 vec3 txRawFiber = mat3(modelMatrix) * fiberDir;

@@ -18,7 +18,8 @@ import {
   trackReadAloud,
   trackSearch,
   trackQuizEvent,
-  trackLanguageSwitch
+  trackLanguageSwitch,
+  trackDanceToggle
 } from './analytics.js';
 import {
   SUPPORTED_LANGS,
@@ -392,6 +393,7 @@ class AtlasApp {
     $('btn-kids').textContent = ui.kids;
     $('btn-pro').textContent = ui.pro;
     if ($('lang-group')) $('lang-group').setAttribute('aria-label', ui.langGroupAria);
+    this._syncDanceButton();
     $('btn-quiz').textContent = ui.quizBtn;
     if ($('btn-mobile-layers')) {
       $('btn-mobile-layers').textContent = ui.mobileLayersBtn;
@@ -609,6 +611,10 @@ class AtlasApp {
     $('btn-zoom-in').addEventListener('click', () => this.viewer.zoomBy(0.6));
     $('btn-zoom-out').addEventListener('click', () => this.viewer.zoomBy(1.6));
 
+    if ($('btn-dance')) {
+      $('btn-dance').addEventListener('click', () => this._toggleDance());
+    }
+
     $('btn-quiz').addEventListener('click', () => this._openQuiz());
     $('btn-quiz-close').addEventListener('click', () => this._closeQuiz());
     $('quiz-modal').addEventListener('click', (e) => {
@@ -617,6 +623,118 @@ class AtlasApp {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !$('quiz-modal').classList.contains('hidden')) this._closeQuiz();
     });
+  }
+
+  _syncDanceButton() {
+    const btn = $('btn-dance');
+    if (!btn) return;
+    const ui = this._ui();
+    const active = Boolean(this.viewer && this.viewer.dancing);
+    btn.textContent = active ? ui.danceActiveBtn || '🕺 Dancing!' : ui.danceBtn || '💃 Dance';
+    btn.setAttribute('aria-label', ui.danceAria || 'Make the 3D human body dance');
+    btn.setAttribute('aria-pressed', String(active));
+    btn.classList.toggle('is-active', active);
+  }
+
+  _toggleDance(force) {
+    const next = typeof force === 'boolean' ? force : !this.viewer.dancing;
+    this.viewer.setDancing(next);
+    document.body.classList.toggle('is-dancing', next);
+    this._syncDanceButton();
+    if (next) {
+      this._startDanceBeat();
+    } else {
+      this._stopDanceBeat();
+    }
+    trackDanceToggle({
+      enabled: next,
+      sex: this.sex,
+      viewId: this.currentViewId,
+      language: this.lang
+    });
+  }
+
+  _startDanceBeat() {
+    this._stopDanceBeat();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    try {
+      if (!this._danceAudioCtx) {
+        this._danceAudioCtx = new AudioCtx();
+      }
+      const ctx = this._danceAudioCtx;
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      // Funky pentatonic bassline (A2, C3, D3, E3, G3, E3, D3, C3)
+      const bassNotes = [110.0, 130.81, 146.83, 164.81, 196.0, 164.81, 146.83, 130.81];
+      let stepIndex = 0;
+      const playStep = () => {
+        if (!this.viewer || !this.viewer.dancing) return;
+        const now = ctx.currentTime;
+        const beatSec = 60 / Math.max(114, this.viewer.heartRate || 114);
+        const halfBeat = beatSec * 0.5;
+        const isDownbeat = stepIndex % 2 === 0;
+        const beatNum = Math.floor(stepIndex / 2) % 4;
+
+        // 1. Kick drum on every downbeat
+        if (isDownbeat) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(135, now);
+          osc.frequency.exponentialRampToValueAtTime(38, now + 0.12);
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        }
+
+        // 2. Crisp snare / clap on beats 2 and 4
+        if (isDownbeat && (beatNum === 1 || beatNum === 3)) {
+          const tri = ctx.createOscillator();
+          const sGain = ctx.createGain();
+          tri.type = 'triangle';
+          tri.frequency.setValueAtTime(240, now);
+          tri.frequency.exponentialRampToValueAtTime(110, now + 0.08);
+          sGain.gain.setValueAtTime(0.09, now);
+          sGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+          tri.connect(sGain).connect(ctx.destination);
+          tri.start(now);
+          tri.stop(now + 0.1);
+        }
+
+        // 3. Funk synth bass note on eighth notes
+        const noteFreq = bassNotes[stepIndex % bassNotes.length];
+        const bass = ctx.createOscillator();
+        const bFilter = ctx.createBiquadFilter();
+        const bGain = ctx.createGain();
+        bass.type = 'sawtooth';
+        bass.frequency.setValueAtTime(noteFreq, now);
+        bFilter.type = 'lowpass';
+        bFilter.frequency.setValueAtTime(isDownbeat ? 680 : 520, now);
+        bFilter.frequency.exponentialRampToValueAtTime(180, now + halfBeat * 0.85);
+        bGain.gain.setValueAtTime(0.065, now);
+        bGain.gain.exponentialRampToValueAtTime(0.001, now + halfBeat * 0.88);
+        bass.connect(bFilter).connect(bGain).connect(ctx.destination);
+        bass.start(now);
+        bass.stop(now + halfBeat * 0.9);
+
+        stepIndex++;
+        this._danceBeatTimer = window.setTimeout(playStep, halfBeat * 1000);
+      };
+      playStep();
+    } catch (_e) {
+      // Ignore Web Audio restrictions
+    }
+  }
+
+  _stopDanceBeat() {
+    if (this._danceBeatTimer) {
+      clearTimeout(this._danceBeatTimer);
+      this._danceBeatTimer = null;
+    }
   }
 
   _bindToggle(id, onChange, initial) {

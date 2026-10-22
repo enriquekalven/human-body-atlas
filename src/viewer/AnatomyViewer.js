@@ -183,6 +183,9 @@ export class AnatomyViewer extends EventTarget {
     this.heartRate = 72;
     this.flowEnabled = true;
     this.beatPhase = 0;
+    this.dancing = false;
+    this.danceMix = 0;
+    this.dancePhase = 0;
     this.time = 0;
     this.tween = null;
     this.frameCount = 0;
@@ -226,10 +229,12 @@ export class AnatomyViewer extends EventTarget {
     const rim = new THREE.DirectionalLight(0xc2d9ff, 2.2);
     rim.position.set(-2.4, 2.6, -2.8);
     rim.target.position.set(0, 0.9, 0);
+    this.rimLight = rim;
 
     const kicker = new THREE.DirectionalLight(0xffd9c4, 0.55);
     kicker.position.set(-2.2, 0.9, 2.4);
     kicker.target.position.set(0, 0.9, 0);
+    this.kickerLight = kicker;
 
     const hemi = new THREE.HemisphereLight(0xe6eefa, 0x2a1d16, 0.22);
 
@@ -246,6 +251,7 @@ export class AnatomyViewer extends EventTarget {
     shadowCatcher.rotation.x = -Math.PI / 2;
     shadowCatcher.position.y = 0.001;
     shadowCatcher.receiveShadow = true;
+    this.shadowCatcher = shadowCatcher;
     this.scene.add(floor, shadowCatcher);
   }
 
@@ -686,6 +692,7 @@ export class AnatomyViewer extends EventTarget {
       sheenRoughness: 0.5,
       side: THREE.DoubleSide
     });
+    this.materials.applyDanceToMaterial(mat);
     const mesh = new THREE.Mesh(g, mat);
     mesh.name = `modesty-garment-${sex}`;
     mesh.castShadow = true;
@@ -867,7 +874,60 @@ export class AnatomyViewer extends EventTarget {
     this.materials.shared.uFlowIntensity.value = this.flowEnabled ? 1 : 0;
   }
 
+  setDancing(enabled) {
+    const next = !!enabled;
+    if (this.dancing === next) return;
+    this.dancing = next;
+    this.dispatchEvent(new CustomEvent('dancechange', { detail: this.dancing }));
+  }
+
   _updatePhysiology(dt) {
+    const targetDance = this.dancing ? 1 : 0;
+    if (this.danceMix !== targetDance) {
+      const step = dt * 3.2;
+      if (this.danceMix < targetDance) {
+        this.danceMix = Math.min(1, this.danceMix + step);
+      } else {
+        this.danceMix = Math.max(0, this.danceMix - step);
+      }
+      this.materials.shared.uDanceMix.value = this.danceMix;
+      if (this.shadowCatcher) {
+        this.shadowCatcher.material.opacity = 0.38 * (1 - this.danceMix);
+      }
+      if (this.keyLight?.shadow?.camera) {
+        const wantNear = this.danceMix > 0.05 ? 90 : 0.5;
+        if (this.keyLight.shadow.camera.near !== wantNear) {
+          this.keyLight.shadow.camera.near = wantNear;
+          this.keyLight.shadow.camera.updateProjectionMatrix();
+        }
+      }
+    }
+
+    if (this.danceMix > 0.0001) {
+      const danceBpm = Math.max(114, this.heartRate);
+      this.dancePhase = (this.dancePhase + dt * (danceBpm / 60) * Math.PI * 2) % (Math.PI * 64);
+      this.materials.shared.uDancePhase.value = this.dancePhase;
+      if (this.rimLight && this.kickerLight) {
+        const hueA = (this.dancePhase / (Math.PI * 8)) % 1;
+        const hueB = (hueA + 0.42) % 1;
+        const discoRim = new THREE.Color().setHSL(hueA, 0.92, 0.62);
+        const discoKick = new THREE.Color().setHSL(hueB, 0.95, 0.58);
+        const baseRim = new THREE.Color(0xc2d9ff);
+        const baseKick = new THREE.Color(0xffd9c4);
+        this.rimLight.color.copy(baseRim).lerp(discoRim, this.danceMix * 0.85);
+        this.kickerLight.color.copy(baseKick).lerp(discoKick, this.danceMix * 0.9);
+        const beatPulse = 0.5 + 0.5 * Math.sin(this.dancePhase);
+        this.rimLight.intensity = 2.2 + this.danceMix * (0.6 + 0.8 * beatPulse);
+        this.kickerLight.intensity = 0.55 + this.danceMix * (0.85 + 0.75 * (1 - beatPulse));
+      }
+    } else if (this.rimLight && this.kickerLight && this.rimLight.intensity !== 2.2) {
+      this.rimLight.color.setHex(0xc2d9ff);
+      this.rimLight.intensity = 2.2;
+      this.kickerLight.color.setHex(0xffd9c4);
+      this.kickerLight.intensity = 0.55;
+    }
+
+    const physScale = 1 - this.danceMix;
     const bps = this.heartRate / 60;
     this.beatPhase = (this.beatPhase + dt * bps) % 1;
     const p = this.beatPhase;
@@ -879,11 +939,11 @@ export class AnatomyViewer extends EventTarget {
     const systole = smooth(0.02, 0.14, p) * (1 - smooth(0.3, 0.46, p));
     this.materials.shared.uBeat.value = systole;
     if (this.flowEnabled) this.materials.shared.uFlowTime.value += dt * bps * 1.6;
-    const hs = 1 - 0.05 * systole;
+    const hs = 1 - 0.05 * systole * physScale;
     this.pivots.heart.scale.setScalar(hs);
     this.pivots.coronary.scale.setScalar(hs);
 
-    const breath = Math.sin((this.time * Math.PI * 2) / 4.4);
+    const breath = Math.sin((this.time * Math.PI * 2) / 4.4) * physScale;
     this.pivots.lungs.scale.set(1 + 0.018 * breath, 1 + 0.012 * breath, 1 + 0.024 * breath);
     this.pivots.diaphragm.position.y = this.diaphragmRestY - 0.007 * breath;
   }
@@ -1116,7 +1176,7 @@ export class AnatomyViewer extends EventTarget {
       this._updateTween(dt);
       this.controls.update();
       this._updatePhysiology(dt);
-      if (this.quality.ao) {
+      if (this.quality.ao && this.danceMix < 0.01) {
         const dist = this.camera.position.distanceTo(this.controls.target);
         this.gtaoPass.updateGtaoMaterial({ radius: THREE.MathUtils.clamp(dist * 0.045, 0.006, 0.09) });
         this.composer.render(dt);

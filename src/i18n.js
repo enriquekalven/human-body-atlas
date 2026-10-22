@@ -90,6 +90,9 @@ export const UI_STRINGS = {
     kids: 'Kids',
     pro: 'Clinical',
     langGroupAria: 'Language',
+    danceBtn: '💃 Dance',
+    danceActiveBtn: '🕺 Dancing!',
+    danceAria: 'Make the 3D human body dance',
     quizBtn: 'Quiz',
     viewBarAria: 'Body system views',
     viewPresets: {
@@ -230,6 +233,9 @@ export const UI_STRINGS = {
     kids: 'Niños',
     pro: 'Clínico',
     langGroupAria: 'Idioma',
+    danceBtn: '💃 Bailar',
+    danceActiveBtn: '🕺 ¡Bailando!',
+    danceAria: 'Hacer bailar al cuerpo humano 3D',
     quizBtn: 'Quiz',
     viewBarAria: 'Vistas de sistemas corporales',
     viewPresets: {
@@ -370,6 +376,9 @@ export const UI_STRINGS = {
     kids: '少儿科普',
     pro: '临床医学',
     langGroupAria: '语言',
+    danceBtn: '💃 跳舞',
+    danceActiveBtn: '🕺 热舞中！',
+    danceAria: '让 3D 人体跳起舞来',
     quizBtn: '趣味测验',
     viewBarAria: '人体系统视图',
     viewPresets: {
@@ -510,6 +519,9 @@ export const UI_STRINGS = {
     kids: 'キッズ',
     pro: '臨床・専門',
     langGroupAria: '言語',
+    danceBtn: '💃 ダンス',
+    danceActiveBtn: '🕺 ダンス中！',
+    danceAria: '3D 人体モデルを踊らせる',
     quizBtn: 'クイズ',
     viewBarAria: '器官系ビュー',
     viewPresets: {
@@ -650,6 +662,9 @@ export const UI_STRINGS = {
     kids: '어린이',
     pro: '임상·전공',
     langGroupAria: '언어',
+    danceBtn: '💃 춤추기',
+    danceActiveBtn: '🕺 댄스 중!',
+    danceAria: '3D 인체 모델 춤추게 하기',
     quizBtn: '퀴즈',
     viewBarAria: '신체 계통별 보기',
     viewPresets: {
@@ -790,6 +805,9 @@ export const UI_STRINGS = {
     kids: 'Crianças',
     pro: 'Clínico',
     langGroupAria: 'Idioma',
+    danceBtn: '💃 Dançar',
+    danceActiveBtn: '🕺 Dançando!',
+    danceAria: 'Fazer o corpo humano 3D dançar',
     quizBtn: 'Quiz',
     viewBarAria: 'Vistas dos sistemas do corpo',
     viewPresets: {
@@ -930,6 +948,9 @@ export const UI_STRINGS = {
     kids: 'Enfants',
     pro: 'Clinique',
     langGroupAria: 'Langue',
+    danceBtn: '💃 Danser',
+    danceActiveBtn: '🕺 Danse !',
+    danceAria: 'Faire danser le corps humain 3D',
     quizBtn: 'Quiz',
     viewBarAria: 'Vues des systèmes corporels',
     viewPresets: {
@@ -1070,6 +1091,9 @@ export const UI_STRINGS = {
     kids: 'Ragazzi',
     pro: 'Clinico',
     langGroupAria: 'Lingua',
+    danceBtn: '💃 Balla',
+    danceActiveBtn: '🕺 Ballando!',
+    danceAria: 'Fai ballare il corpo umano 3D',
     quizBtn: 'Quiz',
     viewBarAria: 'Viste dei sistemi corporei',
     viewPresets: {

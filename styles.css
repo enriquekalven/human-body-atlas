@@ -426,6 +426,34 @@ button {
   border-color: var(--accent);
 }
 
+.dance-btn {
+  border-color: rgba(255, 138, 122, 0.45);
+  background: linear-gradient(135deg, rgba(255, 107, 139, 0.14), rgba(142, 108, 255, 0.14));
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.dance-btn:hover {
+  border-color: #ff7aa8;
+  box-shadow: 0 0 14px rgba(255, 122, 168, 0.32);
+}
+
+.dance-btn.is-active {
+  border-color: #ff80b5;
+  background: linear-gradient(135deg, rgba(255, 77, 148, 0.36), rgba(92, 124, 250, 0.36));
+  color: #fff;
+  box-shadow: 0 0 18px rgba(255, 92, 168, 0.48);
+  animation: dance-btn-pulse 0.52s ease-in-out infinite alternate;
+}
+
+@keyframes dance-btn-pulse {
+  from {
+    transform: translateY(0) scale(1);
+  }
+  to {
+    transform: translateY(-1px) scale(1.03);
+  }
+}
+
 /* ----------------------------------------------------------------------------
    System views
    ---------------------------------------------------------------------------- */

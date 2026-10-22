@@ -13,6 +13,8 @@ import * as THREE from 'three';
 import {
   BUMP_TYPES,
   VERTEX_HEADER,
+  DANCE_NORMAL_VERTEX,
+  DANCE_VERTEX,
   VERTEX_BODY,
   FRAGMENT_HEADER,
   COLOR_BODY,
@@ -111,6 +113,8 @@ export class TissueMaterialLibrary {
       uBeat: { value: 0 },
       uHeartPos: { value: new THREE.Vector3(0, 1.3, 0.05) },
       uFlowIntensity: { value: 1.0 },
+      uDanceMix: { value: 0 },
+      uDancePhase: { value: 0 },
       // Facial flush landmarks (xyz + radius); set from the skin mesh once it loads.
       uFlushPts: { value: Array.from({ length: 5 }, () => new THREE.Vector4(0, 0, 0, 0)) },
       uFlush: { value: 0 },
@@ -194,7 +198,7 @@ export class TissueMaterialLibrary {
       uXray: { value: variant === 3 ? 1 : 0 },
       uXrayCenter: { value: 0.25 },
       uFlowColor: { value: new THREE.Color(def.flowColor ?? 0x000000) },
-      uFlowDir: { value: def.flow ?? 0 },
+      uFlowDir: { def: def.flow ?? 0, value: def.flow ?? 0 },
       uHighlightColor: { value: new THREE.Color(variant === 2 ? 0x2bb5ff : 0xfff1c9) },
       uHighlight: { value: variant === 2 ? 0.42 : variant === 1 ? 0.16 : 0 },
       uSSSWrap: { value: new THREE.Vector3(...(def.sss || [0, 0, 0])) }
@@ -211,6 +215,7 @@ export class TissueMaterialLibrary {
       Object.assign(shader.uniforms, shared, uniforms);
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${VERTEX_HEADER}`)
+        .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>\n${DANCE_NORMAL_VERTEX}`)
         .replace('#include <project_vertex>', `#include <project_vertex>\n${VERTEX_BODY}`);
       let fs = shader.fragmentShader
         .replace('#include <common>', `#include <common>\n${FRAGMENT_HEADER}`)
@@ -224,7 +229,21 @@ export class TissueMaterialLibrary {
       if (SSS_LIGHTS_CHUNK) fs = fs.replace('#include <lights_physical_pars_fragment>', SSS_LIGHTS_CHUNK);
       shader.fragmentShader = fs;
     };
-    mat.customProgramCacheKey = () => 'anatomy-tissue-v2';
+    mat.customProgramCacheKey = () => 'anatomy-tissue-v4';
+    return mat;
+  }
+
+  applyDanceToMaterial(mat) {
+    const shared = this.shared;
+    mat.defines = { ...(mat.defines || {}), TISSUE_GARMENT: '' };
+    mat.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, shared);
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', `#include <common>\n${VERTEX_HEADER}`)
+        .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>\n${DANCE_NORMAL_VERTEX}`)
+        .replace('#include <project_vertex>', `#include <project_vertex>\n${DANCE_VERTEX}`);
+    };
+    mat.customProgramCacheKey = () => 'anatomy-garment-dance-v2';
     return mat;
   }
 
