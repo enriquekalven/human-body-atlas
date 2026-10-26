@@ -434,18 +434,15 @@ export function deformFemaleHeadNeck(xIn, yIn, zIn) {
       z -= 0.0038 * wLarynx;
     }
 
-    // Lower bulky superior trapezius slope & narrow deltoid/acromial shoulder breadth into a sleek feminine line
+    // Lower bulky superior trapezius slope & slightly narrow deltoid/acromial shoulder breadth
     const wTrap =
-      Math.exp(-Math.pow((y - 1.420) / 0.032, 2)) *
-      sstep(0.042, 0.072, ax) *
-      (1 - sstep(0.145, 0.195, ax));
-    y -= 0.0085 * wTrap;
+      Math.exp(-Math.pow((y - 1.420) / 0.028, 2)) *
+      sstep(0.048, 0.075, ax) *
+      (1 - sstep(0.135, 0.175, ax));
+    y -= 0.0048 * wTrap;
 
-    const wShoulder = sstep(1.305, 1.355, y) * (1 - sstep(1.440, 1.480, y)) * sstep(0.060, 0.120, ax);
-    x *= 1 - 0.095 * wShoulder;
-    if (ax > 0.090) {
-      z *= 1 - 0.065 * wShoulder;
-    }
+    const wShoulder = sstep(1.315, 1.360, y) * (1 - sstep(1.435, 1.475, y)) * sstep(0.070, 0.125, ax);
+    x *= 1 - 0.055 * wShoulder;
   }
 
   return [x, y, z];
@@ -454,19 +451,13 @@ export function deformFemaleHeadNeck(xIn, yIn, zIn) {
 /**
  * Remodels the welded, shifted BodyParts3D skin mesh (FJ2810) into a female external skin
  * surface (FJ2810F):
- *   1. Relaxes the external male genital & perineal vertices into a smooth female mons pubis and
- *      perineal floor via bounded envelope projection + 140-iteration Laplacian membrane smoothing.
+ *   1. Relaxes the external male genital vertices into a smooth female mons pubis and perineal
+ *      floor via bounded envelope projection + 120-iteration Laplacian membrane smoothing.
  *   2. Smooths the male supraorbital eyebrow voxel recess so the female arched eyebrow sits on
  *      a clean, continuous brow ridge.
- *   3. Sculpts an athletic hourglass female physique:
- *      - Fuller, lifted bilateral mammary contours
- *      - Cinched hourglass waist, sleeker ribcage/upper back, and arched lumbar lordosis (small of the back)
- *      - Full, round, lifted bilateral "peach" gluteal domes with a defined intergluteal cleft,
- *        upper gluteal shelf, curved feminine hip flare (eliminating male hip dips), and crisp
- *        infragluteal fold (glute-hamstring tie-in)
- *      - Slender feminine upper arms, forearms, and wrists
- *      - Toned, shapely feminine thighs, slender knees, sleek calves, and delicate ankles
- *   4. Applies post-sculpt Laplacian polish so all sculpted transitions have silky-smooth normals.
+ *   3. Sculpts bilateral mammary contours (matched to the HuBMAP mammary gland lobes/ducts),
+ *      female waist/hip proportions, and female craniofacial/cervical/shoulder contours,
+ *      followed by jawline/chin Laplacian smoothing for an organic oval facial contour.
  */
 export function buildFemaleSkin(maleSkinPositions, maleSkinIndices) {
   const nVerts = maleSkinPositions.length / 3;
@@ -485,25 +476,24 @@ export function buildFemaleSkin(maleSkinPositions, maleSkinIndices) {
   const freeList = [];
   const browSmoothList = [];
   const jawChinSmoothList = [];
-  const bodyPolishList = [];
   for (let i = 0; i < nVerts; i++) {
     const x = pos[i * 3];
     const y = pos[i * 3 + 1];
     const z = pos[i * 3 + 2];
-    if (Math.abs(x) < 0.044 && y > 0.742 && y < 0.882 && z > -0.068) {
+    if (Math.abs(x) < 0.042 && y > 0.750 && y < 0.880 && z > -0.030) {
       const isGen =
-        (z > 0.048 && Math.abs(x) < 0.040) ||
-        (y > 0.752 && z > -0.065 && Math.abs(x) < 0.027) ||
-        (z > 0.015 && y < 0.855 && Math.abs(x) < 0.034);
+        (z > 0.052 && Math.abs(x) < 0.040) ||
+        (y > 0.768 && z > -0.025 && Math.abs(x) < 0.025) ||
+        (z > 0.020 && y < 0.855 && Math.abs(x) < 0.033);
       if (isGen) {
         freeList.push(i);
         const tY = Math.max(0, Math.min(1, (y - 0.795) / (0.875 - 0.795)));
-        const zCap = 0.038 + 0.032 * tY;
+        const zCap = 0.040 + 0.034 * tY;
         if (pos[i * 3 + 2] > zCap) pos[i * 3 + 2] = zCap;
         const yFloor =
-          0.804 +
-          0.012 * Math.max(0, (z + 0.04) / 0.10) * (1 - Math.min(1, Math.pow(x / 0.026, 2)));
-        if (Math.abs(x) < 0.025 && pos[i * 3 + 1] < yFloor) pos[i * 3 + 1] = yFloor;
+          0.796 +
+          0.015 * Math.max(0, (z + 0.01) / 0.08) * (1 - Math.min(1, Math.pow(x / 0.025, 2)));
+        if (Math.abs(x) < 0.022 && pos[i * 3 + 1] < yFloor) pos[i * 3 + 1] = yFloor;
       }
     } else if (Math.abs(x) > 0.008 && Math.abs(x) < 0.058 && y > 1.6105 && y < 1.6275 && z > 0.052) {
       browSmoothList.push(i);
@@ -516,11 +506,8 @@ export function buildFemaleSkin(maleSkinPositions, maleSkinIndices) {
     ) {
       jawChinSmoothList.push(i);
     }
-    if (y > 0.08 && y < 1.38) {
-      bodyPolishList.push(i);
-    }
   }
-  for (let iter = 0; iter < 140; iter++) {
+  for (let iter = 0; iter < 120; iter++) {
     for (const i of freeList) {
       const nb = adj[i];
       let sx = 0, sy = 0, sz = 0;
@@ -545,208 +532,42 @@ export function buildFemaleSkin(maleSkinPositions, maleSkinIndices) {
     }
   }
 
-  // 2. Full-body athletic hourglass female sculpting
+  // 2. Bilateral breast contour + female waist/hip contour + craniofacial/cervical remodeling
   for (let i = 0; i < nVerts; i++) {
     let x = pos[i * 3];
     let y = pos[i * 3 + 1];
     let z = pos[i * 3 + 2];
-    const ax = Math.abs(x);
-    const sx = x >= 0 ? 1 : -1;
 
-    // Smooth torso vs hanging-arm separation mask for y in [0.72, 1.36]
-    const xArmBoundary =
-      y > 1.24
-        ? 0.168
-        : 0.154 + 0.040 * sstep(1.16, 0.82, y);
-    const wTorso = y > 1.36 ? 0 : 1 - sstep(xArmBoundary - 0.008, xArmBoundary + 0.006, ax);
-    const wArm = y > 0.75 && y < 1.38 ? sstep(xArmBoundary - 0.004, xArmBoundary + 0.010, ax) : 0;
-
-    // 2a. Fuller, lifted bilateral breast contour (visible from front, side, and 3/4 back views)
-    if (z > -0.005 && y > 1.14 && y < 1.385 && ax < 0.165 && wTorso > 0.01) {
+    if (z > 0.01 && y > 1.15 && y < 1.38 && Math.abs(x) < 0.165) {
       let dz = 0;
       let dy = 0;
-      let dx = 0;
       for (const s of [-1, 1]) {
-        const xc = s * 0.089;
-        const yc = 1.250;
-        const rx = (x - xc) / 0.075;
-        const ry = (y - yc) / (y >= yc ? 0.092 : 0.060);
-        const r2 = rx * rx + ry * ry;
+        const xc = s * 0.091;
+        const yc = 1.246;
+        const dx = (x - xc) / 0.068;
+        const dym = (y - yc) / (y >= yc ? 0.088 : 0.056);
+        const r2 = dx * dx + dym * dym;
         if (r2 < 1.0) {
           const w = Math.pow(1 - r2, 2);
-          dz += 0.048 * w;
-          dy += 0.004 * w * (1 - Math.max(0, ry));
-          dx += s * 0.009 * w * sstep(0.065, 0.125, ax);
+          dz += 0.036 * w;
+          dy -= 0.005 * w * (1 - Math.max(0, dym));
         }
-        const ndx = (x - s * 0.096) / 0.011;
-        const ndy = (y - 1.246) / 0.011;
+        const ndx = (x - s * 0.097) / 0.011;
+        const ndy = (y - 1.242) / 0.011;
         const nr2 = ndx * ndx + ndy * ndy;
         if (nr2 < 1.0) dz += 0.0045 * Math.pow(1 - nr2, 1.5);
       }
-      const sternal = sstep(0.012, 0.038, ax);
-      const lat = 1 - sstep(0.142, 0.164, ax);
-      const wBust = sternal * lat * sstep(-0.005, 0.025, z) * wTorso;
-      z += dz * wBust;
-      y += dy * wBust;
-      x += dx * wBust;
+      const sternal = sstep(0.014, 0.042, Math.abs(x));
+      const lat = 1 - sstep(0.138, 0.162, Math.abs(x));
+      z += dz * sternal * lat;
+      y += dy * sternal * lat;
     }
 
-    // 2b. Cinched hourglass waist, sleek upper back/ribcage & lumbar lordosis S-curve
-    if (y > 0.72 && y < 1.36 && wTorso > 0.01) {
-      // Narrow waist (peaking at y = 1.055 m) + sleek ribcage/latissimus taper (y = 1.18..1.32 m)
-      const wWaist = Math.exp(-Math.pow((y - 1.055) / 0.082, 2));
-      const wRibs = Math.exp(-Math.pow((y - 1.210) / 0.095, 2));
-      // Curvaceous lateral hip & gluteus medius flare (peaking at y = 0.868 m)
-      const wHip = Math.exp(-Math.pow((y - 0.868) / 0.088, 2));
-      // Extra lateral hip-dip fill at y = 0.84..0.95 so the waist-to-hip violin curve is unbroken
-      const wHipDipFill =
-        Math.exp(-Math.pow((y - 0.905) / 0.048, 2)) *
-        sstep(0.095, 0.145, ax);
-
-      const xScale =
-        1 -
-        0.235 * wWaist -
-        0.115 * wRibs +
-        0.135 * wHip +
-        0.045 * wHipDipFill;
-      x *= 1 + (xScale - 1) * wTorso;
-
-      // Flatten anterior stomach wall & soften anterior rib flare
-      if (z > 0) {
-        const wStomach = Math.exp(-Math.pow((y - 1.015) / 0.095, 2)) * sstep(0.01, 0.07, z);
-        z -= 0.015 * wStomach * wTorso;
-      }
-
-      // Lumbar lordosis: arch the small of the back (y = 0.96..1.16, z < -0.02) forward (+z)
-      // so the lower back sweeps dramatically into the upper gluteal shelf
-      if (z < -0.015 && y > 0.93 && y < 1.32) {
-        const wLordosis =
-          Math.exp(-Math.pow((y - 1.055) / 0.072, 2)) *
-          sstep(-0.020, -0.075, z);
-        const wUpperBackSlim =
-          Math.exp(-Math.pow((y - 1.220) / 0.085, 2)) *
-          sstep(-0.030, -0.100, z);
-        // Deepen the central spinal erector groove slightly for athletic back definition
-        const wSpineGroove = 1 - 0.65 * sstep(0.012, 0.042, ax);
-        z += (0.022 * wLordosis * (0.75 + 0.25 * wSpineGroove) + 0.011 * wUpperBackSlim) * wTorso;
-      }
-
-      // 2c. Bilateral 3D "Peach" Gluteal Domes + Defined Intergluteal Cleft + Infragluteal Fold
-      if (z < -0.005 && y > 0.735 && y < 0.995) {
-        const wPost = sstep(-0.005, -0.055, z);
-        // Keep the midline intergluteal cleft recessed between the two round cheeks
-        const cleftMask = 0.16 + 0.84 * sstep(0.004, 0.034, ax);
-
-        let gluteDz = 0;
-        let gluteDy = 0;
-        let gluteDx = 0;
-        for (const s of [-1, 1]) {
-          const xc = s * 0.064;
-          const yc = 0.864;
-          const rx = (x - xc) / 0.086;
-          const ry = (y - yc) / (y >= yc ? 0.108 : 0.080);
-          const r2 = rx * rx + ry * ry;
-          if (r2 < 1.0) {
-            // Smooth round dome profile
-            const wDome = Math.pow(1 - r2, 1.65);
-            gluteDz -= 0.052 * wDome;
-            gluteDy += 0.016 * wDome;
-            gluteDx += s * 0.015 * wDome * sstep(0.025, 0.085, ax);
-          }
-        }
-
-        // Upper gluteal shelf boost (y = 0.90..0.97) for a high, lifted athletic peach profile
-        const wShelfY = Math.exp(-Math.pow((y - 0.918) / 0.042, 2));
-        const wShelfX = Math.exp(-Math.pow((ax - 0.066) / 0.058, 2));
-        const wShelf = wShelfY * wShelfX;
-        gluteDz -= 0.018 * wShelf;
-        gluteDy += 0.006 * wShelf;
-
-        z += gluteDz * cleftMask * wPost * wTorso;
-        y += gluteDy * (0.4 + 0.6 * cleftMask) * wPost * wTorso;
-        x += gluteDx * wPost * wTorso;
-
-        // Crisp infragluteal crease (glute-hamstring tie-in at y ≈ 0.772 m)
-        const wCreaseY = Math.exp(-Math.pow((y - 0.770) / 0.018, 2));
-        const wCreaseX = sstep(0.018, 0.042, ax) * (1 - sstep(0.115, 0.155, ax));
-        const wCreaseZ = sstep(-0.035, -0.075, z);
-        const wCrease = wCreaseY * wCreaseX * wCreaseZ * wTorso;
-        z += 0.013 * wCrease;
-        y += 0.004 * wCrease;
-      }
-    }
-
-    // 2d. Slender, toned feminine arms, forearms & wrists (y in [0.75, 1.38])
-    if (wArm > 0.01) {
-      // Smooth local arm centerline (cxArm, czArm) from shoulder (y=1.36) to hand (y=0.78)
-      const tArm = Math.max(0, Math.min(1, (1.36 - y) / (1.36 - 0.86)));
-      const cxArm =
-        y >= 1.12
-          ? 0.206 + 0.010 * ((1.36 - y) / 0.24)
-          : 0.216 + 0.044 * Math.pow(Math.max(0, (1.12 - y) / 0.26), 1.15);
-      const czArm =
-        y >= 1.06
-          ? -0.036
-          : -0.036 + 0.054 * sstep(1.06, 0.86, y);
-
-      // Slim upper arm and forearm thickness by 24%, tapering on the hand below y=0.85
-      const slimFactor = 0.24 * sstep(0.76, 0.87, y) * (1 - 0.35 * sstep(1.32, 1.38, y));
-      const dxArm = x - sx * cxArm;
-      const dzArm = z - czArm;
-      x -= dxArm * slimFactor * wArm;
-      z -= dzArm * slimFactor * wArm;
-
-      // Bring the entire arm slightly closer to the narrower female torso/shoulder
-      const inwardShift = 0.014 * (1 - 0.35 * tArm) * sstep(0.76, 0.86, y);
-      x -= sx * inwardShift * wArm;
-    }
-
-    // 2e. Toned, shapely feminine thighs, slender knees, sleek calves & ankles (y in [0.06, 0.78])
-    if (y > 0.06 && y < 0.79 && ax < 0.185) {
-      const wLeg = 1 - sstep(0.755, 0.790, y);
-      // Local leg centerline (cxLeg, czLeg)
-      const cxLeg =
-        y > 0.52
-          ? 0.084 + 0.003 * ((y - 0.52) / 0.26)
-          : y > 0.26
-            ? 0.080
-            : 0.077;
-      const czLeg =
-        y > 0.50
-          ? -0.012
-          : y > 0.30
-            ? -0.012 - 0.036 * sstep(0.50, 0.34, y)
-            : -0.041;
-
-      const dxLeg = x - sx * cxLeg;
-      const dzLeg = z - czLeg;
-
-      // Upper/mid thigh (y = 0.55..0.77): smooth feminine sweep + subtle inner-thigh clearance
-      if (y > 0.52) {
-        const wUpperThigh = Math.exp(-Math.pow((y - 0.71) / 0.065, 2));
-        const wLowerThigh = Math.exp(-Math.pow((y - 0.56) / 0.055, 2));
-        // Subtle posterior/anterior rounding on upper thigh, sleeker taper toward knee
-        if (z < czLeg) {
-          z -= 0.007 * wUpperThigh * wLeg;
-        }
-        x -= dxLeg * (0.11 * wLowerThigh) * wLeg;
-        // Clean inner-thigh taper near midline
-        if (ax < cxLeg) {
-          const wInner = Math.exp(-Math.pow((y - 0.68) / 0.085, 2)) * (1 - sstep(0.010, 0.055, ax));
-          x += sx * 0.0065 * wInner * wLeg;
-        }
-      }
-
-      // Knee, calf & ankle slimming (y = 0.07..0.55): eliminate bulky male knee & gastrocnemius flare
-      if (y < 0.56) {
-        const wKnee = Math.exp(-Math.pow((y - 0.48) / 0.050, 2));
-        const wCalf = Math.exp(-Math.pow((y - 0.33) / 0.085, 2));
-        const wAnkle = Math.exp(-Math.pow((y - 0.15) / 0.060, 2));
-        const slimX = 0.15 * wKnee + 0.21 * wCalf + 0.17 * wAnkle;
-        const slimZ = 0.09 * wKnee + 0.13 * wCalf + 0.12 * wAnkle;
-        x -= dxLeg * slimX * wLeg;
-        z -= dzLeg * slimZ * wLeg;
-      }
+    if (Math.abs(x) < 0.19 && y > 0.78 && y < 1.20) {
+      const waist = Math.exp(-Math.pow((y - 1.07) / 0.075, 2));
+      const hip = Math.exp(-Math.pow((y - 0.90) / 0.085, 2));
+      x *= 1 - 0.045 * waist + 0.042 * hip;
+      if (z < 0) z *= 1 + 0.038 * hip;
     }
 
     if (y >= 1.30) {
@@ -771,31 +592,6 @@ export function buildFemaleSkin(maleSkinPositions, maleSkinIndices) {
       pos[i * 3] = pos[i * 3] * 0.35 + (sx / n) * 0.65;
       pos[i * 3 + 1] = pos[i * 3 + 1] * 0.35 + (sy / n) * 0.65;
       pos[i * 3 + 2] = pos[i * 3 + 2] * 0.35 + (sz / n) * 0.65;
-    }
-  }
-
-  // 4. Volume-preserving Taubin polish (λ = +0.32, μ = -0.33) across the sculpted body
-  //    so waist, lumbar arch, gluteal domes, cleft, and legs have silky-smooth surface normals.
-  const tmp = new Float32Array(pos.length);
-  for (let pass = 0; pass < 6; pass++) {
-    for (const weight of [0.32, -0.33]) {
-      tmp.set(pos);
-      for (const i of bodyPolishList) {
-        const nb = adj[i];
-        const n = nb.length;
-        if (!n) continue;
-        let sx = 0, sy = 0, sz = 0;
-        for (let k = 0; k < n; k++) {
-          const j = nb[k] * 3;
-          sx += tmp[j];
-          sy += tmp[j + 1];
-          sz += tmp[j + 2];
-        }
-        const i3 = i * 3;
-        pos[i3] = tmp[i3] + weight * (sx / n - tmp[i3]);
-        pos[i3 + 1] = tmp[i3 + 1] + weight * (sy / n - tmp[i3 + 1]);
-        pos[i3 + 2] = tmp[i3 + 2] + weight * (sz / n - tmp[i3 + 2]);
-      }
     }
   }
 

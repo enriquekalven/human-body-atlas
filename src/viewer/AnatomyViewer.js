@@ -484,8 +484,8 @@ export class AnatomyViewer extends EventTarget {
   }
 
   // Kids-mode modesty garments generated from the real skin surface (shown only while the skin layer
-  // is opaque): athletic boxer shorts for male, and form-fitted sculpted activewear (high-waisted
-  // leopard-fleck athletic shorts + fitted white athletic top) for the female body.
+  // is opaque): athletic boxer shorts for both male & female, plus a matching athletic crop-top /
+  // sports bra for the female body.
   _buildModestyGarment(sex = 'male') {
     const skin = this._skinMesh(sex);
     if (!skin) return;
@@ -493,16 +493,6 @@ export class AnatomyViewer extends EventTarget {
     const pos = skin.geometry.attributes.position;
     if (!pos) return;
     const H = this.manifest.bodyHeight || 1.73;
-
-    if (sex === 'female') {
-      const grp = this._buildFemaleActivewear(skin, H);
-      if (!grp) return;
-      this.garments[sex] = { mesh: grp, skin };
-      this.groups.skin.add(grp);
-      this._applyGarmentVisibility();
-      return;
-    }
-
     const yTop = H * 0.572; // waistband, just below the iliac crests
     const yLeg = H * 0.405; // hem, upper-mid thigh
     const yBraTop = H * 0.756; // upper chest band (below axillary fold)
@@ -684,6 +674,11 @@ export class AnatomyViewer extends EventTarget {
       smoothRings(leg, 0.008);
       addTube(leg, false);
     }
+    if (sex === 'female' && chestBand.length > 200) {
+      const bra = sliceRings(chestBand, yBraTop, yBraBot, (p) => Math.abs(p[0]) <= 0.142, 0.142);
+      smoothRings(bra, 0.0065);
+      addTube(bra, true, true);
+    }
     if (indices.length < 300) return;
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -705,297 +700,6 @@ export class AnatomyViewer extends EventTarget {
     this.garments[sex] = { mesh, skin };
     this.groups.skin.add(mesh);
     this._applyGarmentVisibility();
-  }
-
-  // Second-skin sculpted female activewear: high-waisted contoured athletic booty shorts (with a
-  // subtle blue-grey leopard-fleck pattern) and a sleek fitted white athletic crop-top. Built
-  // directly from the female skin mesh triangles + vertex normals so every curve of the waist,
-  // lumbar arch, hips, and gluteal contour stays 100% visible in Kids mode.
-  _buildFemaleActivewear(skin, H = 1.73) {
-    const pos = skin.geometry.attributes.position;
-    const nrm = skin.geometry.attributes.normal;
-    const idx = skin.geometry.index;
-    if (!pos || !idx) return null;
-
-    const normalMat = new THREE.Matrix3().getNormalMatrix(skin.matrixWorld);
-    const nVerts = pos.count;
-    const wx = new Float32Array(nVerts);
-    const wy = new Float32Array(nVerts);
-    const wz = new Float32Array(nVerts);
-    const nx = new Float32Array(nVerts);
-    const ny = new Float32Array(nVerts);
-    const nz = new Float32Array(nVerts);
-    const v = new THREE.Vector3();
-    const n = new THREE.Vector3();
-
-    for (let i = 0; i < nVerts; i++) {
-      v.fromBufferAttribute(pos, i).applyMatrix4(skin.matrixWorld);
-      wx[i] = v.x;
-      wy[i] = v.y;
-      wz[i] = v.z;
-      if (nrm) {
-        n.fromBufferAttribute(nrm, i).applyMatrix3(normalMat).normalize();
-        nx[i] = n.x;
-        ny[i] = n.y;
-        nz[i] = n.z;
-      }
-    }
-
-    const isTorsoVertex = (i) => {
-      const y = wy[i];
-      const ax = Math.abs(wx[i]);
-      if (y < 0.70 || y > 1.44) return false;
-      const xBound =
-        y < 0.92
-          ? 0.202
-          : y < 0.96
-            ? 0.202 - ((y - 0.92) / 0.04) * 0.020
-            : y < 1.04
-              ? 0.182 - ((y - 0.96) / 0.08) * 0.032
-              : y < 1.15
-                ? 0.150
-                : 0.145;
-      return ax < xBound;
-    };
-
-    // Signed distance inside each garment (> 0 inside garment, < 0 outside, in meters):
-    // 1. High-waisted sculpted booty shorts: V-contoured waistband at the cinched waist (~1.012 m)
-    //    and a cheeky contoured hem right at the infragluteal crease (~0.768 m) rising slightly on
-    //    the outer hip (+1.6 cm) just like the reference activewear.
-    const shortsSdf = (i) => {
-      const x = wx[i];
-      const y = wy[i];
-      const z = wz[i];
-      const yTop = 1.008 + 0.012 * Math.cos(Math.min(Math.PI, (x / 0.13) * Math.PI)) - 0.008 * Math.tanh(z * 12);
-      const hipArch = 0.018 * Math.exp(-Math.pow((Math.abs(x) - 0.115) / 0.06, 2));
-      const backCheek = z < -0.04 ? 0.010 * Math.exp(-Math.pow((Math.abs(x) - 0.064) / 0.055, 2)) : 0;
-      const yBot = 0.764 + hipArch + backCheek;
-      return Math.min(yTop - y, y - yBot);
-    };
-
-    // 2. Sleek fitted athletic crop-top / sports tank: from underbust (~1.175 m) up over chest and
-    //    upper back (~1.385 m) with clean scoop neckline and contoured armholes.
-    const topSdf = (i) => {
-      const x = wx[i];
-      const ax = Math.abs(x);
-      const y = wy[i];
-      const z = wz[i];
-      const yBot = 1.174 - 0.008 * Math.exp(-Math.pow(x / 0.09, 2));
-      const neckDip = (z >= 0 ? 0.048 : 0.032) * Math.exp(-Math.pow(x / 0.052, 2));
-      const armCut = 0.058 * Math.pow(Math.max(0, (ax - 0.075) / 0.062), 1.55);
-      const yTop = 1.388 - neckDip - armCut;
-      const xLim = 0.138 - 0.014 * Math.max(0, (y - 1.24) / 0.14);
-      return Math.min(yTop - y, y - yBot, xLim - ax);
-    };
-
-    const buildSubMesh = (sdfFn, offsetMeters, uvScale = 3.6) => {
-      const remap = new Int32Array(nVerts).fill(-1);
-      const positions = [];
-      const normals = [];
-      const uvs = [];
-      const hemDist = [];
-      const indices = [];
-      const triCount = idx.count / 3;
-
-      for (let t = 0; t < triCount; t++) {
-        const i0 = idx.getX(t * 3);
-        const i1 = idx.getX(t * 3 + 1);
-        const i2 = idx.getX(t * 3 + 2);
-        if (!isTorsoVertex(i0) || !isTorsoVertex(i1) || !isTorsoVertex(i2)) continue;
-        const d0 = sdfFn(i0);
-        const d1 = sdfFn(i1);
-        const d2 = sdfFn(i2);
-        if (Math.max(d0, d1, d2) < -0.002) continue;
-        const tri = [i0, i1, i2];
-        const ds = [d0, d1, d2];
-        const out = [0, 0, 0];
-        for (let k = 0; k < 3; k++) {
-          const vi = tri[k];
-          let ni = remap[vi];
-          if (ni === -1) {
-            ni = positions.length / 3;
-            remap[vi] = ni;
-            positions.push(
-              wx[vi] + nx[vi] * offsetMeters,
-              wy[vi] + ny[vi] * offsetMeters,
-              wz[vi] + nz[vi] * offsetMeters
-            );
-            normals.push(nx[vi], ny[vi], nz[vi]);
-            // Continuous 3D fabric UV (zero atan2 branch-cut discontinuity)
-            const u = (wx[vi] + wz[vi] * 0.65) * uvScale;
-            const vUv = (wy[vi] - wz[vi] * 0.25) * uvScale;
-            uvs.push(u, vUv);
-            hemDist.push(ds[k]);
-          }
-          out[k] = ni;
-        }
-        indices.push(out[0], out[1], out[2]);
-      }
-      if (indices.length < 60) return null;
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      g.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-      g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-      g.setAttribute('aHemDist', new THREE.Float32BufferAttribute(hemDist, 1));
-      g.setIndex(indices);
-      return g;
-    };
-
-    const applyHemClip = (mat, seamDarken = 0.08) => {
-      this.materials.applyDanceToMaterial(mat);
-      const prevCompile = mat.onBeforeCompile;
-      mat.onBeforeCompile = (shader, renderer) => {
-        if (prevCompile) prevCompile(shader, renderer);
-        shader.vertexShader =
-          `attribute float aHemDist;\nvarying float vHemDist;\n` +
-          shader.vertexShader.replace(
-            '#include <begin_vertex>',
-            '#include <begin_vertex>\nvHemDist = aHemDist;'
-          );
-        shader.fragmentShader =
-          `varying float vHemDist;\n` +
-          shader.fragmentShader.replace(
-            '#include <dithering_fragment>',
-            `#include <dithering_fragment>
-            if (vHemDist < 0.0) discard;
-            float seamBand = smoothstep(0.0, 0.006, vHemDist) * (1.0 - smoothstep(0.006, 0.013, vHemDist));
-            gl_FragColor.rgb *= (1.0 - seamBand * ${seamDarken.toFixed(3)});`
-          );
-      };
-    };
-
-    const shortsGeo = buildSubMesh(shortsSdf, 0.0018, 3.8);
-    const topGeo = buildSubMesh(topSdf, 0.0019, 3.6);
-    if (!shortsGeo && !topGeo) return null;
-
-    const grp = new THREE.Group();
-    grp.name = 'modesty-garment-female';
-
-    if (shortsGeo) {
-      const shortsMat = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        map: this._getLeopardShortsTexture(),
-        roughness: 0.72,
-        metalness: 0.02,
-        sheen: 0.85,
-        sheenColor: new THREE.Color(0x9fb4cc),
-        sheenRoughness: 0.45,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -1,
-        side: THREE.DoubleSide
-      });
-      applyHemClip(shortsMat, 0.12);
-      const shortsMesh = new THREE.Mesh(shortsGeo, shortsMat);
-      shortsMesh.name = 'modesty-garment-female-shorts';
-      shortsMesh.castShadow = true;
-      shortsMesh.receiveShadow = true;
-      grp.add(shortsMesh);
-    }
-
-    if (topGeo) {
-      const topMat = new THREE.MeshPhysicalMaterial({
-        color: 0xf4f5f8,
-        roughness: 0.68,
-        metalness: 0.01,
-        sheen: 0.9,
-        sheenColor: new THREE.Color(0xffffff),
-        sheenRoughness: 0.4,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -1,
-        side: THREE.DoubleSide
-      });
-      applyHemClip(topMat, 0.08);
-      const topMesh = new THREE.Mesh(topGeo, topMat);
-      topMesh.name = 'modesty-garment-female-top';
-      topMesh.castShadow = true;
-      topMesh.receiveShadow = true;
-      grp.add(topMesh);
-    }
-
-    return grp;
-  }
-
-  // Procedural cool slate-blue / periwinkle leopard-fleck seamless texture for the female shorts.
-  _getLeopardShortsTexture() {
-    if (this._leopardShortsTex) return this._leopardShortsTex;
-    if (typeof document === 'undefined') return null;
-    const size = 512;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-
-    // Cool blue-grey activewear base
-    ctx.fillStyle = '#8b9db5';
-    ctx.fillRect(0, 0, size, size);
-
-    // Subtle fabric heathering
-    let seed = 1337;
-    const rand = () => {
-      seed = (seed * 16807) % 2147483647;
-      return (seed - 1) / 2147483646;
-    };
-
-    for (let i = 0; i < 2200; i++) {
-      const x = rand() * size;
-      const y = rand() * size;
-      ctx.fillStyle = rand() > 0.5 ? 'rgba(165, 182, 205, 0.22)' : 'rgba(102, 120, 145, 0.22)';
-      ctx.fillRect(x, y, 3, 1.5);
-    }
-
-    // Organic leopard rosettes & flecks (tiled with 3x3 wrap so seams are invisible)
-    const nSpots = 165;
-    for (let i = 0; i < nSpots; i++) {
-      const cx = rand() * size;
-      const cy = rand() * size;
-      const rx = 6.5 + rand() * 9.5;
-      const ry = 4.5 + rand() * 7.5;
-      const rot = rand() * Math.PI;
-      const isRosette = rand() > 0.28;
-
-      for (const ox of [-size, 0, size]) {
-        for (const oy of [-size, 0, size]) {
-          ctx.save();
-          ctx.translate(cx + ox, cy + oy);
-          ctx.rotate(rot);
-          if (isRosette) {
-            // Warm slate interior
-            ctx.fillStyle = 'rgba(90, 104, 126, 0.62)';
-            ctx.beginPath();
-            ctx.ellipse(0, 0, rx * 0.72, ry * 0.72, 0, 0, Math.PI * 2);
-            ctx.fill();
-            // Broken dark charcoal-navy C-ring lobes
-            ctx.fillStyle = 'rgba(34, 42, 58, 0.85)';
-            const lobes = 3 + Math.floor(rand() * 2);
-            for (let l = 0; l < lobes; l++) {
-              const ang = (l / lobes) * Math.PI * 1.65;
-              const lx = Math.cos(ang) * rx * 0.65;
-              const ly = Math.sin(ang) * ry * 0.65;
-              ctx.beginPath();
-              ctx.ellipse(lx, ly, rx * 0.44, ry * 0.36, ang + 0.6, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          } else {
-            ctx.fillStyle = 'rgba(38, 46, 64, 0.78)';
-            ctx.beginPath();
-            ctx.ellipse(0, 0, rx * 0.58, ry * 0.48, 0, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          ctx.restore();
-        }
-      }
-    }
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.needsUpdate = true;
-    this._leopardShortsTex = tex;
-    return tex;
   }
 
   setModesty(enabled) {
