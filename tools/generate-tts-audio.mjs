@@ -117,10 +117,10 @@ async function synthesizeChunkMp3(textChunk, lang, maxRetries = 6) {
         if (status === 400 && errText.includes('sentences that are too long') && textChunk.length > 20) {
           const isCjk = lang === 'zh' || lang === 'yue' || lang === 'ja';
           const parts = textChunk
-            .split(/(?<=[。！？!?，、,;；:：])\s*/u)
-            .map((p) => p.replace(/[，、,;；:：\s]+$/u, '').trim())
+            .split(/(?<=[。！？!?؟，、،,;؛；:：])\s*/u)
+            .map((p) => p.replace(/[，、،,;؛；:：\s]+$/u, '').trim())
             .filter(Boolean)
-            .map((p) => (/[。！？.!?]$/u.test(p) ? p : `${p}${isCjk ? '。' : '.'}`));
+            .map((p) => (/[。！？.!?؟]$/u.test(p) ? p : `${p}${isCjk ? '。' : '.'}`));
           if (parts.length > 1) {
             const subBufs = [];
             for (const p of parts) {

@@ -47,7 +47,9 @@ const BCP_47_BY_LANG = {
   ko: 'ko-KR',
   pt: 'pt-BR',
   fr: 'fr-FR',
-  it: 'it-IT'
+  it: 'it-IT',
+  de: 'de-DE',
+  ar: 'ar-XA'
 };
 
 function el(tag, className, text) {
@@ -371,6 +373,11 @@ class AtlasApp {
     }
     document.documentElement.lang =
       this.lang === 'zh' ? 'zh-CN' : this.lang === 'yue' ? 'zh-HK' : this.lang;
+    const textDir = this.lang === 'ar' ? 'rtl' : 'ltr';
+    for (const id of ['inspector', 'quiz-modal', 'search-input', 'search-results', 'hover-tooltip', 'left-panel']) {
+      const node = $(id);
+      if (node) node.setAttribute('dir', textDir);
+    }
   }
 
   _applyUiStrings() {

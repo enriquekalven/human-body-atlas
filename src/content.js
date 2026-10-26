@@ -354,6 +354,22 @@ const LAYER_LABELS_BY_LANG = {
     vessels: 'Sistema cardiovascolare',
     organs: 'Organi interni',
     nerves: 'Sistema nervoso'
+  },
+  de: {
+    skin: 'Haut & Oberfläche',
+    muscles: 'Muskelsystem',
+    skeleton: 'Skelettsystem',
+    vessels: 'Herz-Kreislauf-System',
+    organs: 'Innere Organe',
+    nerves: 'Nervensystem'
+  },
+  ar: {
+    skin: 'الجلد والسطح',
+    muscles: 'الجهاز العضلي',
+    skeleton: 'الجهاز الهيكلي',
+    vessels: 'الجهاز القلبي الوعائي',
+    organs: 'الأعضاء الداخلية',
+    nerves: 'الجهاز العصبي'
   }
 };
 
@@ -366,7 +382,9 @@ const LAYER_FALLBACK_BY_LANG = {
   ko: '해부학 구조',
   pt: 'Anatomia',
   fr: 'Anatomie',
-  it: 'Anatomia'
+  it: 'Anatomia',
+  de: 'Anatomie',
+  ar: 'التشريح'
 };
 
 export function layerLabel(layer, lang = 'en') {
@@ -382,7 +400,7 @@ function foldAccents(s) {
     .toLowerCase();
 }
 
-const NON_EN_LANGS = ['es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
+const NON_EN_LANGS = ['es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it', 'de', 'ar'];
 
 function buildTranslatedRecord(baseName) {
   const namesByLang = { en: baseName };

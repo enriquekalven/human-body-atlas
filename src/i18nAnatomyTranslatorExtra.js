@@ -298,6 +298,246 @@ const WORD_MAP_IT = {
   ventricle: 'ventricolo', atrium: 'atrio'
 };
 
+const WORD_MAP_DE = {
+  left: 'linker/linke/linkes', right: 'rechter/rechte/rechtes', superior: 'oberer/obere', inferior: 'unterer/untere',
+  middle: 'mittlerer/mittlere', anterior: 'vorderer/vordere', posterior: 'hinterer/hintere', medial: 'medialer/mediale',
+  lateral: 'lateraler/laterale', internal: 'innerer/innere', external: 'äußerer/äußere',
+  superficial: 'oberflächlicher/oberflächliche', deep: 'tiefer/tiefe', common: 'gemeinsamer/gemeinsame',
+  ascending: 'aufsteigender/aufsteigende', descending: 'absteigender/absteigende', transverse: 'querverlaufender/querverlaufende',
+  artery: 'Arterie (Schlagader)', vein: 'Vene', nerve: 'Nerv', muscle: 'Muskel',
+  tendon: 'Sehne', ligament: 'Band (Ligament)', bone: 'Knochen', cartilage: 'Knorpel',
+  gland: 'Drüse', ganglion: 'Ganglion (Nervenknoten)', plexus: 'Geflecht (Plexus)', trunk: 'Stamm (Truncus)',
+  branch: 'Ast (Ramus)', lobe: 'Lappen', head: 'Kopf (Caput)', part: 'Teil (Pars)', body: 'Körper (Corpus)',
+  neck: 'Hals (Collum)', arch: 'Bogen (Arcus)', sinus: 'Sinus', duct: 'Gang (Ductus)', rib: 'Rippe',
+  vertebra: 'Wirbel', tooth: 'Zahn', lung: 'Lunge', bronchus: 'Bronchus',
+  ventricle: 'Herzkammer (Ventrikel)', atrium: 'Vorhof (Atrium)'
+};
+
+const WORD_MAP_AR = {
+  left: 'أيسر / يسرى', right: 'أيمن / يمنى', superior: 'علوي', inferior: 'سفلي',
+  middle: 'أوسط', anterior: 'أمامي', posterior: 'خلفي', medial: 'إنسي',
+  lateral: 'وحشي (جانبي)', internal: 'داخلي (باطن)', external: 'خارجي (ظاهر)',
+  superficial: 'سطحي', deep: 'عميق', common: 'أصلي (مشترك)',
+  ascending: 'صاعد', descending: 'نازل', transverse: 'مستعرض',
+  artery: 'شريان', vein: 'وريد', nerve: 'عصب', muscle: 'عضلة',
+  tendon: 'وتر', ligament: 'رباط', bone: 'عظم', cartilage: 'غضروف',
+  gland: 'غدة', ganglion: 'عقدة عصبية', plexus: 'ضفيرة', trunk: 'جذع',
+  branch: 'فرع', lobe: 'فص', head: 'رأس', part: 'جزء', body: 'جسم',
+  neck: 'عنق', arch: 'قوس', sinus: 'جيب', duct: 'قناة', rib: 'ضلع',
+  vertebra: 'فقرة', tooth: 'سن', lung: 'رئة', bronchus: 'قصبة هوائية',
+  ventricle: 'بطين', atrium: 'أذين'
+};
+
+export const EXACT_NAMES_DE_AR = {
+  'skin': { de: 'Haut (Cutis)', ar: 'الجلد' },
+  'hair of head': { de: 'Kopfhaar', ar: 'شعر الرأس' },
+  'eyebrow': { de: 'Augenbraue', ar: 'الحاجب' },
+  'lip': { de: 'Lippe', ar: 'الشفة' },
+  'external ear': { de: 'Äußeres Ohr (Ohrmuschel)', ar: 'الأذن الخارجية (صيوان الأذن)' },
+  'eyeball': { de: 'Augapfel (Auge)', ar: 'مقلة العين (العين)' },
+  'lens': { de: 'Augenlinse', ar: 'عدسة العين' },
+  'cornea': { de: 'Hornhaut (Cornea)', ar: 'القرنية' },
+  'tongue': { de: 'Zunge', ar: 'اللسان' },
+  'brain': { de: 'Gehirn (Encephalon)', ar: 'الدماغ (المخ والمخيخ وجذع الدماغ)' },
+  'cerebrum': { de: 'Großhirn (Cerebrum)', ar: 'المخ' },
+  'cerebellum': { de: 'Kleinhirn (Cerebellum)', ar: 'المخيخ' },
+  'brainstem': { de: 'Hirnstamm', ar: 'جذع الدماغ' },
+  'midbrain': { de: 'Mittelhirn (Mesencephalon)', ar: 'الدماغ المتوسط' },
+  'pons': { de: 'Brücke (Pons)', ar: 'الجسر' },
+  'medulla oblongata': { de: 'Verlängertes Mark (Medulla oblongata)', ar: 'النخاع المستطيل (البصلة السيسائية)' },
+  'corpus callosum': { de: 'Balken (Corpus callosum)', ar: 'الجسم الثفني' },
+  'thalamus': { de: 'Thalamus', ar: 'المهاد' },
+  'hypothalamus': { de: 'Hypothalamus', ar: 'تحت المهاد (الوطاء)' },
+  'hippocampus': { de: 'Hippocampus', ar: 'الحُصين' },
+  'amygdala': { de: 'Mandelkern (Amygdala)', ar: 'اللوزة الدماغية' },
+  'pituitary gland': { de: 'Hirnanhangsdrüse (Hypophyse)', ar: 'الغدة النخامية' },
+  'pineal gland': { de: 'Zirbeldrüse (Epiphyse)', ar: 'الغدة الصنوبرية' },
+  'falx cerebri': { de: 'Großhirnsichel (Falx cerebri)', ar: 'مِنجل المخ' },
+  'tentorium cerebelli': { de: 'Kleinhirnzelt (Tentorium cerebelli)', ar: 'خيمة المخيخ' },
+  'dura mater': { de: 'Harte Hirnhaut (Dura mater)', ar: 'الأم الجافية' },
+  'spinal cord': { de: 'Rückenmark (Medulla spinalis)', ar: 'الحبل الشوكي (النخاع الشوكي)' },
+  'heart': { de: 'Herz (Cor)', ar: 'القلب' },
+  'right lung': { de: 'Rechter Lungenflügel', ar: 'الرئة اليمنى' },
+  'left lung': { de: 'Linker Lungenflügel', ar: 'الرئة اليسرى' },
+  'lung': { de: 'Lunge (Pulmo)', ar: 'الرئة' },
+  'trachea': { de: 'Luftröhre (Trachea)', ar: 'الرغامى (القصبة الهوائية)' },
+  'larynx': { de: 'Kehlkopf (Larynx)', ar: 'الحنجرة' },
+  'pharynx': { de: 'Rachen (Pharynx)', ar: 'البلعوم' },
+  'thyroid gland': { de: 'Schilddrüse (Glandula thyroidea)', ar: 'الغدة الدرقية' },
+  'thymus': { de: 'Thymus (Bries)', ar: 'الغدة الزعترية (التيموس)' },
+  'diaphragm': { de: 'Zwerchfell (Diaphragma)', ar: 'الحجاب الحاجز' },
+  'esophagus': { de: 'Speiseröhre (Ösophagus)', ar: 'المريء' },
+  'stomach': { de: 'Magen (Gaster)', ar: 'المعدة' },
+  'liver': { de: 'Leber (Hepar)', ar: 'الكبد' },
+  'gallbladder': { de: 'Gallenblase (Vesica biliaris)', ar: 'المرارة (الحويصلة الصفراوية)' },
+  'common bile duct': { de: 'Hauptgallengang (Ductus choledochus)', ar: 'القناة الصفراوية المشتركة' },
+  'cystic duct': { de: 'Gallenblasengang (Ductus cysticus)', ar: 'القناة المرارية' },
+  'common hepatic duct': { de: 'Gemeinsamer Lebergang (Ductus hepaticus communis)', ar: 'القناة الكبدية المشتركة' },
+  'pancreas': { de: 'Bauchspeicheldrüse (Pankreas)', ar: 'البنكرياس' },
+  'spleen': { de: 'Milz (Splen / Lien)', ar: 'الطحال' },
+  'small intestine': { de: 'Dünndarm (Intestinum tenue)', ar: 'الأمعاء الدقيقة' },
+  'duodenum': { de: 'Zwölffingerdarm (Duodenum)', ar: 'الاثنا عشر (العفج)' },
+  'jejunum': { de: 'Leerdarm (Jejunum)', ar: 'الصائم' },
+  'ileum': { de: 'Krummdarm (Ileum)', ar: 'اللفائفي' },
+  'large intestine': { de: 'Dickdarm (Intestinum crassum)', ar: 'الأمعاء الغليظة' },
+  'colon': { de: 'Grimmdarm (Kolon)', ar: 'القولون' },
+  'cecum': { de: 'Blinddarm (Caecum)', ar: 'الأعور' },
+  'appendix': { de: 'Wurmfortsatz (Appendix vermiformis)', ar: 'الزائدة الدودية' },
+  'ascending colon': { de: 'Aufsteigender Grimmdarm (Colon ascendens)', ar: 'القولون الصاعد' },
+  'transverse colon': { de: 'Querverlaufender Grimmdarm (Colon transversum)', ar: 'القولون المستعرض' },
+  'descending colon': { de: 'Absteigender Grimmdarm (Colon descendens)', ar: 'القولون النازل' },
+  'sigmoid colon': { de: 'S-Darm (Colon sigmoideum)', ar: 'القولون السيني' },
+  'rectum': { de: 'Mastdarm (Rektum)', ar: 'المستقيم' },
+  'mesentery': { de: 'Gekröse (Mesenterium)', ar: 'المساريقا' },
+  'kidney': { de: 'Niere (Ren)', ar: 'الكلية' },
+  'right kidney': { de: 'Rechte Niere', ar: 'الكلية اليمنى' },
+  'left kidney': { de: 'Linke Niere', ar: 'الكلية اليسرى' },
+  'ureter': { de: 'Harnleiter (Ureter)', ar: 'الحالب' },
+  'right ureter': { de: 'Rechter Harnleiter', ar: 'الحالب الأيمن' },
+  'left ureter': { de: 'Linker Harnleiter', ar: 'الحالب الأيسر' },
+  'urinary bladder': { de: 'Harnblase (Vesica urinaria)', ar: 'المثانة البولية' },
+  'urethra': { de: 'Harnröhre (Urethra)', ar: 'الإحليل (مجري البول)' },
+  'uterus': { de: 'Gebärmutter (Uterus)', ar: 'الرحم' },
+  'uterine cervix': { de: 'Gebärmutterhals (Zervix)', ar: 'عنق الرحم' },
+  'vagina': { de: 'Scheide (Vagina)', ar: 'المهبل' },
+  'ovary': { de: 'Eierstock (Ovar)', ar: 'المبيض' },
+  'left ovary': { de: 'Linker Eierstock', ar: 'المبيض الأيسر' },
+  'right ovary': { de: 'Rechter Eierstock', ar: 'المبيض الأيمن' },
+  'fallopian tube': { de: 'Eileiter (Tuba uterina)', ar: 'قناة فالوب (البوق الرحمي)' },
+  'left fallopian tube': { de: 'Linker Eileiter', ar: 'قناة فالوب اليسرى' },
+  'right fallopian tube': { de: 'Rechter Eileiter', ar: 'قناة فالوب اليمنى' },
+  'female genital system': { de: 'Weibliches Fortpflanzungssystem', ar: 'الجهاز التناسلي الأنثوي' },
+  'mammary gland': { de: 'Brustdrüse (Glandula mammaria)', ar: 'الغدة الثديية' },
+  'left mammary gland': { de: 'Linke Brustdrüse', ar: 'الغدة الثديية اليسرى' },
+  'right mammary gland': { de: 'Rechte Brustdrüse', ar: 'الغدة الثديية اليمنى' },
+  'breast': { de: 'Brust (Mamma)', ar: 'الثدي' },
+  'prostate': { de: 'Vorsteherdrüse (Prostata)', ar: 'البروستاتا (الموثة)' },
+  'testis': { de: 'Hoden (Testis)', ar: 'الخصية' },
+  'left testis': { de: 'Linker Hoden', ar: 'الخصية اليسرى' },
+  'right testis': { de: 'Rechter Hoden', ar: 'الخصية اليمنى' },
+  'epididymis': { de: 'Nebenhoden (Epididymis)', ar: 'البربخ' },
+  'deferent duct': { de: 'Samenleiter (Ductus deferens)', ar: 'الأسهر (القناة الناقلة للمني)' },
+  'seminal vesicle': { de: 'Bläschendrüse (Samenbläschen)', ar: 'الحويصلة المنوية' },
+  'penis': { de: 'Penis', ar: 'القضيب' },
+  'aorta': { de: 'Hauptschlagader (Aorta)', ar: 'الشريان الأبهر (الأورطي)' },
+  'ascending aorta': { de: 'Aufsteigende Aorta (Aorta ascendens)', ar: 'الأبهر الصاعد' },
+  'aortic arch': { de: 'Aortenbogen (Arcus aortae)', ar: 'قوس الأبهر' },
+  'descending aorta': { de: 'Absteigende Aorta (Aorta descendens)', ar: 'الأبهر النازل' },
+  'thoracic aorta': { de: 'Brustaorta (Aorta thoracica)', ar: 'الأبهر الصدري' },
+  'abdominal aorta': { de: 'Bauchaorta (Aorta abdominalis)', ar: 'الأبهر البطني' },
+  'pulmonary trunk': { de: 'Lungenarterienstamm (Truncus pulmonalis)', ar: 'الجذع الرئوي' },
+  'superior vena cava': { de: 'Obere Hohlvene (Vena cava superior)', ar: 'الوريد الأجوف العلوي' },
+  'inferior vena cava': { de: 'Untere Hohlvene (Vena cava inferior)', ar: 'الوريد الأجوف السفلي' },
+  'hepatic portal vein': { de: 'Pfortader (Vena portae hepatis)', ar: 'وريد الباب الكبدي' },
+  'portal vein': { de: 'Pfortader (Vena portae)', ar: 'الوريد البابي' },
+  'brachiocephalic trunk': { de: 'Arm-Kopf-Stamm (Truncus brachiocephalicus)', ar: 'الجذع العضدي الرأسي' },
+  'celiac trunk': { de: 'Bauchhöhlenstamm (Truncus coeliacus)', ar: 'الجذع البطني (الزلاقي)' },
+  'superior mesenteric artery': { de: 'Obere Eingeweidearterie (Arteria mesenterica superior)', ar: 'الشريان المساريقي العلوي' },
+  'inferior mesenteric artery': { de: 'Untere Eingeweidearterie (Arteria mesenterica inferior)', ar: 'الشريان المساريقي السفلي' },
+  'basilar artery': { de: 'Basilararterie (Arteria basilaris)', ar: 'الشريان القاعدي' },
+  'skull': { de: 'Schädel (Cranium)', ar: 'الجمجمة' },
+  'cranium': { de: 'Hirnschädel (Cranium)', ar: 'قحف الجمجمة' },
+  'mandible': { de: 'Unterkiefer (Mandibula)', ar: 'الفك السفلي' },
+  'hyoid bone': { de: 'Zungenbein (Os hyoideum)', ar: 'العظم اللامي' },
+  'vertebral column': { de: 'Wirbelsäule (Columna vertebralis)', ar: 'العمود الفقري' },
+  'cervical vertebral column': { de: 'Halswirbelsäule (HWS)', ar: 'العمود الفقري العنقي' },
+  'thoracic vertebral column': { de: 'Brustwirbelsäule (BWS)', ar: 'العمود الفقري الصدري' },
+  'lumbar vertebral column': { de: 'Lendenwirbelsäule (LWS)', ar: 'العمود الفقري القطني' },
+  'sacrum': { de: 'Kreuzbein (Os sacrum)', ar: 'العجز' },
+  'coccyx': { de: 'Steißbein (Os coccygis)', ar: 'العصعص' },
+  'atlas': { de: 'Atlas (1. Halswirbel C1)', ar: 'الفهقة (الفقرة العنقية الأولى C1)' },
+  'axis': { de: 'Axis (2. Halswirbel C2)', ar: 'المحور (الفقرة العنقية الثانية C2)' },
+  'sternum': { de: 'Brustbein (Sternum)', ar: 'عظم القص' },
+  'rib': { de: 'Rippe (Costa)', ar: 'الضلع' },
+  'pelvis': { de: 'Becken (Pelvis)', ar: 'الحوض' },
+  'hip bone': { de: 'Hüftbein (Os coxae)', ar: 'عظم الورك' }
+};
+
+export const STEM_DE_AR = [
+  ['sternocleidomastoid', 'Kopfwender (M. sternocleidomastoideus)', 'العضلة القصية الترقوية الخشائية'],
+  ['pectoralis major', 'Großer Brustmuskel (M. pectoralis major)', 'العضلة الصدرية الكبرى'],
+  ['pectoralis minor', 'Kleiner Brustmuskel (M. pectoralis minor)', 'العضلة الصدرية الصغرى'],
+  ['latissimus dorsi', 'Breiter Rückenmuskel (M. latissimus dorsi)', 'العضلة العريضة الظهرية'],
+  ['biceps brachii', 'Zweiköpfiger Armmuskel (M. biceps brachii)', 'العضلة ذات الرأسين العضدية (البايسبس)'],
+  ['triceps brachii', 'Dreiköpfiger Armmuskel (M. triceps brachii)', 'العضلة ثلاثية الرؤوس العضدية (الترايسبس)'],
+  ['biceps femoris', 'Zweiköpfiger Oberschenkelmuskel (M. biceps femoris)', 'العضلة ذات الرأسين الفخذية'],
+  ['rectus abdominis', 'Gerader Bauchmuskel (M. rectus abdominis)', 'العضلة المستقيمة البطنية'],
+  ['transversus abdominis', 'Querer Bauchmuskel (M. transversus abdominis)', 'العضلة المستعرضة البطنية'],
+  ['external oblique', 'Äußerer schräger Bauchmuskel (M. obliquus externus abdominis)', 'العضلة المائلة الخارجية للبطن'],
+  ['internal oblique', 'Innerer schräger Bauchmuskel (M. obliquus internus abdominis)', 'العضلة المائلة الداخلية للبطن'],
+  ['rectus femoris', 'Gerader Oberschenkelmuskel (M. rectus femoris)', 'العضلة المستقيمة الفخذية'],
+  ['vastus lateralis', 'Äußerer Schenkelmuskel (M. vastus lateralis)', 'العضلة المتسعة الوحشية'],
+  ['vastus medialis', 'Innerer Schenkelmuskel (M. vastus medialis)', 'العضلة المتسعة الإنسية'],
+  ['vastus intermedius', 'Mittlerer Schenkelmuskel (M. vastus intermedius)', 'العضلة المتسعة المتوسطة'],
+  ['quadriceps femoris', 'Vierköpfiger Oberschenkelmuskel (Quadrizeps)', 'عضلة الفخذ رباعية الرؤوس'],
+  ['gluteus maximus', 'Großer Gesäßmuskel (M. gluteus maximus)', 'العضلة الألوية الكبرى'],
+  ['gluteus medius', 'Mittlerer Gesäßmuskel (M. gluteus medius)', 'العضلة الألوية الوسطى'],
+  ['gluteus minimus', 'Kleiner Gesäßmuskel (M. gluteus minimus)', 'العضلة الألوية الصغرى'],
+  ['gastrocnemius', 'Zwillingswadenmuskel (M. gastrocnemius)', 'عضلة الساق التوأمية (بطة الساق)'],
+  ['soleus', 'Schollenmuskel (M. soleus)', 'العضلة النعلية'],
+  ['calcaneal tendon', 'Achillessehne (Tendo calcaneus)', 'وتر أخيل (الوتر العقبي)'],
+  ['tibialis anterior', 'Vorderer Schienbeinmuskel (M. tibialis anterior)', 'العضلة الظنبوبية الأمامية'],
+  ['sartorius', 'Schneidermuskel (M. sartorius)', 'العضلة الخياطية'],
+  ['deltoid', 'Deltamuskel (M. deltoideus)', 'العضلة الدالية'],
+  ['trapezius', 'Kapuzenmuskel (M. trapezius)', 'العضلة شبه المنحرفة'],
+  ['brachioradialis', 'Oberarmspeichenmuskel (M. brachioradialis)', 'العضلة العضدية الكعبرية'],
+  ['brachialis', 'Armbeuger (M. brachialis)', 'العضلة العضدية'],
+  ['masseter', 'Kaumuskel (M. masseter)', 'العضلة الماضغة'],
+  ['temporalis', 'Schläfenmuskel (M. temporalis)', 'العضلة الصدغية'],
+  ['cervical vertebra', 'Halswirbel (Vertebra cervicalis)', 'فقرة عنقية'],
+  ['thoracic vertebra', 'Brustwirbel (Vertebra thoracica)', 'فقرة صدرية'],
+  ['lumbar vertebra', 'Lendenwirbel (Vertebra lumbalis)', 'فقرة قطنية'],
+  ['intervertebral disc', 'Bandscheibe (Discus intervertebralis)', 'قرص بين الفقرات'],
+  ['intervertebral disk', 'Bandscheibe (Discus intervertebralis)', 'قرص بين الفقرات'],
+  ['costal cartilage', 'Rippenknorpel (Cartilago costalis)', 'غضروف ضلعي'],
+  ['clavicle', 'Schlüsselbein (Clavicula)', 'الترقوة'],
+  ['scapula', 'Schulterblatt (Scapula)', 'لوح الكتف'],
+  ['humerus', 'Oberarmknochen (Humerus)', 'عظم العضد'],
+  ['radius', 'Speiche (Radius)', 'عظم الكعبرة'],
+  ['ulna', 'Elle (Ulna)', 'عظم الزند'],
+  ['femur', 'Oberschenkelknochen (Femur)', 'عظم الفخذ'],
+  ['patella', 'Kniescheibe (Patella)', 'الرضفة (صابونة الركبة)'],
+  ['tibia', 'Schienbein (Tibia)', 'الظنبوب (قصبة الساق)'],
+  ['fibula', 'Wadenbein (Fibula)', 'الشظية'],
+  ['calcaneus', 'Fersenbein (Calcaneus)', 'عظم العقب (الكعب)'],
+  ['talus', 'Sprungbein (Talus)', 'عظم القعب'],
+  ['frontal bone', 'Stirnbein (Os frontale)', 'العظم الجبهي'],
+  ['parietal bone', 'Scheitelbein (Os parietale)', 'العظم الجداري'],
+  ['temporal bone', 'Schläfenbein (Os temporale)', 'العظم الصدغي'],
+  ['occipital bone', 'Hinterhauptbein (Os occipitale)', 'العظم القذالي'],
+  ['zygomatic bone', 'Jochbein (Os zygomaticum)', 'العظم الوجني'],
+  ['maxilla', 'Oberkiefer (Maxilla)', 'الفك العلوي'],
+  ['great saphenous vein', 'Große Rosenader (Vena saphena magna)', 'الوريد الصافن الكبير'],
+  ['small saphenous vein', 'Kleine Rosenader (Vena saphena parva)', 'الوريد الصافن الصغير'],
+  ['common carotid artery', 'Gemeinsame Halsschlagader (A. carotis communis)', 'الشريان السباتي الأصلي'],
+  ['internal carotid artery', 'Innere Halsschlagader (A. carotis interna)', 'الشريان السباتي الداخلي'],
+  ['external carotid artery', 'Äußere Halsschlagader (A. carotis externa)', 'الشريان السباتي الخارجي'],
+  ['internal jugular vein', 'Innere Drosselvene (V. jugularis interna)', 'الوريد الوداجي الداخلي'],
+  ['external jugular vein', 'Äußere Drosselvene (V. jugularis externa)', 'الوريد الوداجي الخارجي'],
+  ['subclavian artery', 'Schlüsselbeinarterie (A. subclavia)', 'الشريان تحت الترقوة'],
+  ['subclavian vein', 'Schlüsselbeinvene (V. subclavia)', 'الوريد تحت الترقوة'],
+  ['axillary artery', 'Achselarterie (A. axillaris)', 'الشريان الإبطي'],
+  ['brachial artery', 'Oberarmarterie (A. brachialis)', 'الشريان العضدي'],
+  ['radial artery', 'Speichenarterie (A. radialis)', 'الشريان الكعبري'],
+  ['ulnar artery', 'Ellenarterie (A. ulnaris)', 'الشريان الزندي'],
+  ['femoral artery', 'Oberschenkelarterie (A. femoralis)', 'الشريان الفخذي'],
+  ['femoral vein', 'Oberschenkelvene (V. femoralis)', 'الوريد الفخذي'],
+  ['coronary artery', 'Herzkranzarterie (A. coronaria)', 'الشريان التاجي'],
+  ['pulmonary artery', 'Lungenarterie (A. pulmonalis)', 'الشريان الرئوي'],
+  ['pulmonary vein', 'Lungenvene (V. pulmonalis)', 'الوريد الرئوي'],
+  ['renal artery', 'Nierenarterie (A. renalis)', 'الشريان الكلوي'],
+  ['renal vein', 'Nierenvene (V. renalis)', 'الوريد الكلوي'],
+  ['sciatic nerve', 'Ischiasnerv (N. ischiadicus)', 'العصب الوركي (عرق النسا)'],
+  ['femoral nerve', 'Oberschenkelnerv (N. femoralis)', 'العصب الفخذي'],
+  ['vagus nerve', 'Vagusnerv (N. vagus, X. Hirnnerv)', 'العصب المبهم (الحائر)'],
+  ['phrenic nerve', 'Zwerchfellnerv (N. phrenicus)', 'العصب الحجابي'],
+  ['median nerve', 'Mittelarmnerv (N. medianus)', 'العصب المتوسط'],
+  ['ulnar nerve', 'Ellennerv (N. ulnaris)', 'العصب الزندي'],
+  ['radial nerve', 'Speichennerv (N. radialis)', 'العصب الكعبري'],
+  ['optic nerve', 'Sehnerv (N. opticus)', 'العصب البصري'],
+  ['brachial plexus', 'Armgeflecht (Plexus brachialis)', 'الضفيرة العضدية']
+];
+
 function capFirst(s) {
   if (!s) return s;
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -305,7 +545,65 @@ function capFirst(s) {
 
 const LANG_STEM_INDEX = { ja: 1, ko: 2, pt: 3, fr: 4, it: 5 };
 
+function translateDeArFragment(s, lang) {
+  if (EXACT_NAMES_DE_AR[s] && EXACT_NAMES_DE_AR[s][lang]) {
+    return EXACT_NAMES_DE_AR[s][lang];
+  }
+  const stemIdx = lang === 'de' ? 1 : 2;
+  for (const row of STEM_DE_AR) {
+    if (s === row[0]) return row[stemIdx];
+  }
+  const wordMap = lang === 'de' ? WORD_MAP_DE : WORD_MAP_AR;
+  let working = s;
+  let replaced = false;
+  for (const row of STEM_DE_AR) {
+    if (working.includes(row[0])) {
+      working = working.replace(row[0], row[stemIdx]);
+      replaced = true;
+    }
+  }
+  if (!replaced) {
+    const tokens = working.split(/\s+/);
+    if (tokens.length >= 2) {
+      const last = tokens[tokens.length - 1];
+      if (wordMap[last]) {
+        const head = wordMap[last];
+        const mods = tokens.slice(0, -1).map((t) => wordMap[t] || t).join(' ');
+        return lang === 'ar' ? `${head} ${mods}` : `${mods} ${head}`;
+      }
+    }
+  }
+  return working;
+}
+
 export function translateExtraLang(lower, original, lang) {
+  if (lang === 'de' || lang === 'ar') {
+    if (EXACT_NAMES_DE_AR[lower] && EXACT_NAMES_DE_AR[lower][lang]) {
+      return EXACT_NAMES_DE_AR[lower][lang];
+    }
+    const leftWord = lang === 'de' ? 'links' : 'الأيسر';
+    const rightWord = lang === 'de' ? 'rechts' : 'الأيمن';
+    const ofMatch = lower.match(/^(.+?)\s+of\s+(left|right\s+)?(.+)$/);
+    if (ofMatch) {
+      const [, prefix, sideRaw, rest] = ofMatch;
+      const prefixTr = translateDeArFragment(prefix.trim(), lang);
+      const restTr = translateDeArFragment(rest.trim(), lang);
+      const sideTr = sideRaw ? (sideRaw.trim() === 'left' ? leftWord : rightWord) : '';
+      return lang === 'ar'
+        ? `${prefixTr} ${restTr}${sideTr ? ' ' + sideTr : ''}`
+        : capFirst(`${prefixTr} (${restTr}${sideTr ? ', ' + sideTr : ''})`);
+    }
+    const sideMatch = lower.match(/^(left|right)\s+(.+)$/);
+    if (sideMatch) {
+      const [, side, rest] = sideMatch;
+      const restTr = translateDeArFragment(rest.trim(), lang);
+      const sideTr = side === 'left' ? leftWord : rightWord;
+      return lang === 'ar' ? `${restTr} (${sideTr})` : capFirst(`${restTr} (${sideTr})`);
+    }
+    const frag = translateDeArFragment(lower, lang);
+    return frag ? (lang === 'ar' ? frag : capFirst(frag)) : original;
+  }
+
   if (EXACT_NAMES_EXTRA[lower] && EXACT_NAMES_EXTRA[lower][lang]) {
     return EXACT_NAMES_EXTRA[lower][lang];
   }
@@ -806,5 +1104,151 @@ export const EXTRA_MULTILINGUAL_SYNONYMS = {
   "tendine d'achille": 'calcaneal tendon',
   'vena cava': 'vena cava',
   'midollo spinale': 'spinal cord',
-  'nervo sciatico': 'sciatic nerve'
+  'nervo sciatico': 'sciatic nerve',
+
+  // German (de)
+  'herz': 'heart',
+  'gehirn': 'brain',
+  'hirn': 'brain',
+  'großhirn': 'cerebrum',
+  'kleinhirn': 'cerebellum',
+  'hirnstamm': 'brainstem',
+  'lunge': 'lung',
+  'lungen': 'lung',
+  'leber': 'liver',
+  'gallenblase': 'gallbladder',
+  'magen': 'stomach',
+  'niere': 'kidney',
+  'nieren': 'kidney',
+  'harnblase': 'urinary bladder',
+  'blase': 'urinary bladder',
+  'dünndarm': 'small intestine',
+  'dickdarm': 'large intestine',
+  'blinddarm': 'cecum',
+  'wurmfortsatz': 'appendix',
+  'bauchspeicheldrüse': 'pancreas',
+  'milz': 'spleen',
+  'gebärmutter': 'uterus',
+  'eierstock': 'ovary',
+  'eileiter': 'fallopian tube',
+  'brustdrüse': 'mammary gland',
+  'vorsteherdrüse': 'prostate',
+  'hoden': 'testis',
+  'haut': 'skin',
+  'auge': 'eyeball',
+  'augapfel': 'eyeball',
+  'ohr': 'external ear',
+  'zunge': 'tongue',
+  'luftröhre': 'trachea',
+  'kehlkopf': 'larynx',
+  'speiseröhre': 'esophagus',
+  'schilddrüse': 'thyroid gland',
+  'schädel': 'skull',
+  'unterkiefer': 'mandible',
+  'wirbelsäule': 'vertebral column',
+  'kreuzbein': 'sacrum',
+  'steißbein': 'coccyx',
+  'rippe': 'rib',
+  'rippen': 'rib',
+  'brustbein': 'sternum',
+  'schlüsselbein': 'clavicle',
+  'schulterblatt': 'scapula',
+  'oberarmknochen': 'humerus',
+  'speiche': 'radius',
+  'elle': 'ulna',
+  'becken': 'pelvis',
+  'oberschenkelknochen': 'femur',
+  'kniescheibe': 'patella',
+  'schienbein': 'tibia',
+  'wadenbein': 'fibula',
+  'brustmuskel': 'pectoralis major',
+  'bizeps': 'biceps brachii',
+  'trizeps': 'triceps brachii',
+  'zwerchfell': 'diaphragm',
+  'gesäßmuskel': 'gluteus maximus',
+  'quadrizeps': 'rectus femoris',
+  'wadenmuskel': 'gastrocnemius',
+  'achillessehne': 'calcaneal tendon',
+  'hauptschlagader': 'aorta',
+  'hohlvene': 'vena cava',
+  'halsschlagader': 'carotid artery',
+  'rückenmark': 'spinal cord',
+  'ischiasnerv': 'sciatic nerve',
+
+  // Arabic (ar)
+  'قلب': 'heart',
+  'القلب': 'heart',
+  'دماغ': 'brain',
+  'الدماغ': 'brain',
+  'مخ': 'brain',
+  'المخ': 'brain',
+  'مخيخ': 'cerebellum',
+  'المخيخ': 'cerebellum',
+  'رئة': 'lung',
+  'الرئة': 'lung',
+  'الرئتان': 'lung',
+  'كبد': 'liver',
+  'الكبد': 'liver',
+  'مرارة': 'gallbladder',
+  'المرارة': 'gallbladder',
+  'معدة': 'stomach',
+  'المعدة': 'stomach',
+  'كلية': 'kidney',
+  'الكلية': 'kidney',
+  'الكلى': 'kidney',
+  'مثانة': 'urinary bladder',
+  'المثانة': 'urinary bladder',
+  'الأمعاء الدقيقة': 'small intestine',
+  'الأمعاء الغليظة': 'large intestine',
+  'قولون': 'colon',
+  'القولون': 'colon',
+  'بنكرياس': 'pancreas',
+  'البنكرياس': 'pancreas',
+  'طحال': 'spleen',
+  'الطحال': 'spleen',
+  'رحم': 'uterus',
+  'الرحم': 'uterus',
+  'مبيض': 'ovary',
+  'المبيض': 'ovary',
+  'قناة فالوب': 'fallopian tube',
+  'ثدي': 'mammary gland',
+  'الثدي': 'mammary gland',
+  'بروستاتا': 'prostate',
+  'البروستاتا': 'prostate',
+  'خصية': 'testis',
+  'الخصية': 'testis',
+  'جلد': 'skin',
+  'الجلد': 'skin',
+  'عين': 'eyeball',
+  'العين': 'eyeball',
+  'أذن': 'external ear',
+  'الأذن': 'external ear',
+  'لسان': 'tongue',
+  'اللسان': 'tongue',
+  'القصبة الهوائية': 'trachea',
+  'حنجرة': 'larynx',
+  'الحنجرة': 'larynx',
+  'مريء': 'esophagus',
+  'المريء': 'esophagus',
+  'الغدة الدرقية': 'thyroid gland',
+  'جمجمة': 'skull',
+  'الجمجمة': 'skull',
+  'الفك السفلي': 'mandible',
+  'العمود الفقري': 'vertebral column',
+  'ضلع': 'rib',
+  'الأضلاع': 'rib',
+  'الترقوة': 'clavicle',
+  'لوح الكتف': 'scapula',
+  'عظم العضد': 'humerus',
+  'الحوض': 'pelvis',
+  'عظم الفخذ': 'femur',
+  'الرضفة': 'patella',
+  'الحجاب الحاجز': 'diaphragm',
+  'وتر أخيل': 'calcaneal tendon',
+  'الأبهر': 'aorta',
+  'الشريان الأبهر': 'aorta',
+  'الأورطي': 'aorta',
+  'الحبل الشوكي': 'spinal cord',
+  'النخاع الشوكي': 'spinal cord',
+  'العصب الوركي': 'sciatic nerve'
 };

@@ -1,7 +1,8 @@
 /**
  * Internationalization (i18n) hub for the Human Body 3D Atlas.
  * Supports English ('en'), Spanish ('es'), Simplified Chinese ('zh'), Cantonese ('yue'),
- * Japanese ('ja'), Korean ('ko'), Portuguese ('pt'), French ('fr'), and Italian ('it').
+ * Japanese ('ja'), Korean ('ko'), Portuguese ('pt'), French ('fr'), Italian ('it'),
+ * German ('de'), and Arabic ('ar').
  */
 
 import { ANATOMY_PARTS, ANATOMY_QUIZ_QUESTIONS } from './anatomyData.js';
@@ -20,13 +21,15 @@ import {
 import { PARTS_PT, TISSUE_INFO_PT, QUIZ_QUESTIONS_PT } from './i18nPartsPt.js';
 import { PARTS_FR, TISSUE_INFO_FR, QUIZ_QUESTIONS_FR } from './i18nPartsFr.js';
 import { PARTS_IT, TISSUE_INFO_IT, QUIZ_QUESTIONS_IT } from './i18nPartsIt.js';
+import { PARTS_DE, TISSUE_INFO_DE, QUIZ_QUESTIONS_DE } from './i18nPartsDe.js';
+import { PARTS_AR, TISSUE_INFO_AR, QUIZ_QUESTIONS_AR } from './i18nPartsAr.js';
 import { translateAnatomyName, MULTILINGUAL_SYNONYMS } from './i18nAnatomyTranslator.js';
 
 export { translateAnatomyName, MULTILINGUAL_SYNONYMS };
 
-export const SUPPORTED_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
-export const PUBLIC_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
-export const STUDIO_AUDIO_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
+export const SUPPORTED_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it', 'de', 'ar'];
+export const PUBLIC_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it', 'de', 'ar'];
+export const STUDIO_AUDIO_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it', 'de', 'ar'];
 
 export function isPreviewI18n(searchStr) {
   try {
@@ -72,6 +75,8 @@ export function normalizeLang(raw) {
   if (s.startsWith('pt')) return 'pt';
   if (s.startsWith('fr')) return 'fr';
   if (s.startsWith('it')) return 'it';
+  if (s.startsWith('de')) return 'de';
+  if (s.startsWith('ar')) return 'ar';
   return 'en';
 }
 
@@ -1362,6 +1367,292 @@ export const UI_STRINGS = {
     expandInspectorAria: 'Espandi pannello dettagli',
     errorLoadModels: 'Impossibile caricare i modelli 3D. Controlla la connessione e ricarica la pagina.',
     errorWebgl: 'Il browser non è riuscito ad avviare il visualizzatore 3D (è richiesto WebGL 2).'
+  },
+  de: {
+    pageTitle: '3D-Atlas des menschlichen Körpers — Realistische interaktive Anatomie',
+    skipLink: 'Zu den Details der Körperstruktur springen',
+    canvasAria:
+      'Interaktiver menschlicher 3D-Körper. Ziehen zum Drehen, Scrollen oder Zusammenziehen zum Zoomen, Rechtsklick-Ziehen zum Verschieben und Klicken auf eine Struktur, um ihren Namen zu sehen.',
+    canvasAriaTouch:
+      'Interaktiver menschlicher 3D-Körper. Mit einem Finger ziehen zum Drehen, mit zwei Fingern zoomen oder verschieben und auf eine Struktur tippen, um ihren Namen und Details zu sehen.',
+    loadingTitle: 'Der menschliche Körper wird aufgebaut…',
+    loadingSubDefault: 'Echte anatomische 3D-Modelle werden geladen',
+    loadingLayer: (layerName) => `${layerName} wird geladen…`,
+    loadingProgress: (pct, loadedMb, totalMb) => `${pct}% · ${loadedMb} von ${totalMb} MB`,
+    brandTitle: '3D-Atlas des menschlichen Körpers',
+    brandSubtitle: 'Weiblich & Männlich · 2.225 benannte Strukturen',
+    searchLabel: 'Beliebigen Körperteil suchen',
+    searchPlaceholder: 'Körperteil suchen — Herz, Oberschenkelknochen, Gebärmutter, Aorta, Bizeps…',
+    searchResultsAria: 'Passende Körperteile',
+    searchStillLoading: 'Das 3D-Modell wird noch geladen — einen Moment…',
+    searchNoMatch: 'Kein Treffer. Versuche „Herz“, „Femur“, „Gebärmutter“, „Aorta“ oder „Bizeps“.',
+    structuresCount: (n) => `${n} Struktur${n > 1 ? 'en' : ''}`,
+    sexGroupAria: 'Körperanatomie',
+    female: 'Weiblich',
+    male: 'Männlich',
+    audienceGroupAria: 'Erklärungsniveau',
+    kids: 'Kinder',
+    pro: 'Klinisch',
+    langGroupAria: 'Sprache',
+    danceBtn: '💃 Tanzen',
+    danceActiveBtn: '🕺 Tanzt!',
+    danceAria: 'Den menschlichen 3D-Körper tanzen lassen',
+    quizBtn: 'Quiz',
+    viewBarAria: 'Ansichten der Körpersysteme',
+    viewPresets: {
+      skin: 'Haut',
+      muscles: 'Muskeln',
+      skeleton: 'Skelett',
+      circulation: 'Gefäße & Blutfluss',
+      organs: 'Organe',
+      nervous: 'Gehirn & Nerven',
+      xray: 'Röntgen (alle Systeme)'
+    },
+    layerNames: {
+      skin: 'Haut',
+      muscles: 'Muskeln',
+      skeleton: 'Skelett',
+      vessels: 'Venen & Arterien',
+      organs: 'Organe',
+      nerves: 'Gehirn & Nerven'
+    },
+    layerLabels: {
+      skin: 'Haut & Oberfläche',
+      muscles: 'Muskelsystem',
+      skeleton: 'Skelettsystem',
+      vessels: 'Herz-Kreislauf-System',
+      organs: 'Innere Organe',
+      nerves: 'Nervensystem',
+      default: 'Anatomie'
+    },
+    leftPanelAria: 'Anzeigesteuerung',
+    layersTitle: 'Schichten',
+    layersHint: 'Blende beliebige Schichten aus, um darunterliegende Strukturen zu sehen.',
+    heartPanelTitle: 'Herz & Blutfluss',
+    heartRateLabel: 'Herzfrequenz',
+    bpmUnit: (v) => `${v} S/min`,
+    legendArteries: 'Arterien (sauerstoffreich)',
+    legendVeins: 'Venen (Rückstrom)',
+    bloodFlowBtn: 'Blutfluss-Animation',
+    displayPanelTitle: 'Anzeige',
+    labelsBtn: 'Beschriftungen',
+    isolateBtn: 'Auswahl isolieren',
+    autoRotateBtn: 'Auto-Rotation',
+    resetViewBtn: 'Ansicht zurücksetzen',
+    qualityLabel: 'Renderqualität',
+    qualityHigh: 'Hoch (weiche Schatten + Umgebungsverdeckung)',
+    qualityBalanced: 'Ausgewogen',
+    qualityFast: 'Schnell (ältere Geräte)',
+    skinToneLabel: 'Hautton',
+    skinToneSwatchAria: (name) => {
+      const m = { light: 'Hell', medium: 'Mittel', tan: 'Gebräunt', brown: 'Warmbraun', deep: 'Dunkel', Light: 'Hell', Medium: 'Mittel', Tan: 'Gebräunt', 'Warm Brown': 'Warmbraun', Deep: 'Dunkel' };
+      return `Hautton ${m[name] || name}`;
+    },
+    inspectorAria: 'Ausgewählter Körperteil',
+    emptyTitle: 'Entdecke den menschlichen Körper',
+    emptyDesc: 'Fahre mit der Maus über das Modell, um Namen zu sehen. Klicke auf eine Struktur — oder suche oben — zum Heranzoomen und Entdecken.',
+    emptyDescTouch: 'Tippe auf eine Struktur am 3D-Körper — oder suche oben — zum Heranzoomen und Entdecken.',
+    tips: [
+      { bold: 'Ziehen', rest: ' zum Drehen · ', bold2: 'Scrollen', rest2: ' zum Zoomen' },
+      { bold: 'Rechtsklick-Ziehen', rest: ' (oder zwei Finger) zum Verschieben' },
+      { rest: 'Wähle oben ein System: Haut, Muskeln, Skelett, Gefäße, Organe, Nerven' }
+    ],
+    tipsTouch: [
+      { bold: '1-Finger-Ziehen', rest: ' zum Drehen · ', bold2: '2 Finger', rest2: ' zum Zoomen' },
+      { bold: '2-Finger-Ziehen', rest: ' zum Verschieben · ', bold2: 'Tippen', rest2: ' zum Auswählen' },
+      { rest: 'Wähle oben ein System: Haut, Muskeln, Skelett, Gefäße, Organe, Nerven' }
+    ],
+    readAloudBtn: '🔊 Vorlesen',
+    readAloudAria: 'Vorlesen',
+    stopSpeakBtn: '⏹️ Stopp',
+    stopSpeakAria: 'Vorlesen beenden',
+    zoomPartBtn: 'Heranzoomen',
+    isolatePartBtn: 'Nur dies zeigen',
+    showAllBtn: 'Alles zeigen',
+    clearBtn: 'Löschen',
+    sayIt: (pron) => `Aussprache: „${pron}“`,
+    sideLabel: (side) => `${side === 'left' ? 'linke' : side === 'right' ? 'rechte' : side} Seite`,
+    partOfChip: (name) => `Teil von: ${name} — alles zeigen`,
+    belongsTo: 'Gehört zu',
+    structuresInSelection: 'Strukturen in dieser Auswahl',
+    moreChip: (n) => `+${n} weitere`,
+    whyYouNeedIt: 'Warum du es brauchst',
+    fastFacts: 'Kurzinfos',
+    funFacts: 'Spannende Fakten',
+    arterialSupply: 'Arterielle Versorgung',
+    venousDrainage: 'Venöser Abfluss',
+    innervation: 'Innervation',
+    attachmentsRelations: 'Ursprung, Ansatz & Nachbarschaft',
+    referenceValues: 'Referenzwerte',
+    clinicalCorrelation: 'Klinische Korrelation',
+    sourceModel: (fj, fma) => `Modell: BodyParts3D-Element ${fj} · FMA-Konzept ${fma || 'k. A.'}`,
+    sourceRecon: (fma) => `Quelle: Rekonstruierte Oberfläche aus BodyParts3D-Grenzen · FMA-Konzept ${fma || 'k. A.'}`,
+    sourceVhf: (fma) => `Quelle: NIH HuBMAP Visible Human Female Reference Atlas (CC BY 4.0) · FMA-Konzept ${fma || 'k. A.'}`,
+    zoomOutAria: 'Herauszoomen',
+    zoomInAria: 'Hineinzoomen',
+    zoomLabel: 'Zoom',
+    footerAttribution: '3D-Anatomie: BodyParts3D © DBCLS & NIH HuBMAP Human Reference Atlas (Visible Human Female), CC BY 4.0',
+    quizTitle: 'Anatomie-Quiz',
+    quizCloseBtn: 'Schließen',
+    quizCloseAria: 'Quiz schließen',
+    quizStep: (curr, total, score) => `Frage ${curr} von ${total} · Punkte ${score}`,
+    quizNextBtn: 'Nächste Frage',
+    quizSeeScoreBtn: 'Ergebnis anzeigen',
+    quizScoreTitle: (score, total) => `Du hast ${score} von ${total} Punkten erreicht!`,
+    quizPerfectLead: 'Perfekt — du bist ein echter Anatomie-Profi!',
+    quizGoodLead: 'Stark entdeckt! Spiel noch einmal oder erforsche weiter den Körper.',
+    quizPlayAgainBtn: 'Nochmal spielen',
+    mobileLayersBtn: '⚙️ Schichten',
+    mobileLayersAria: 'Schichten und Steuerung öffnen',
+    mobileDrawerTitle: 'Schichten & Steuerung',
+    closeControlsAria: 'Steuerung schließen',
+    minimizeInspectorAria: 'Detailfenster minimieren',
+    expandInspectorAria: 'Detailfenster erweitern',
+    errorLoadModels: 'Die 3D-Modelle konnten nicht geladen werden. Bitte prüfe deine Verbindung und lade die Seite neu.',
+    errorWebgl: 'Dein Browser konnte die 3D-Ansicht nicht starten (WebGL 2 erforderlich).'
+  },
+  ar: {
+    pageTitle: 'أطلس جسم الإنسان ثلاثي الأبعاد — تشريح تفاعلي واقعي',
+    skipLink: 'انتقل إلى تفاصيل الجزء التشريحي',
+    canvasAria:
+      'مجسم تفاعلي ثلاثي الأبعاد لجسم الإنسان. اسحب للتدوير، مرر أو قرّب بإصبعين للتكبير، اسحب بالزر الأيمن للتحريك، وانقر على أي بنية لمعرفة اسمها وتفاصيلها.',
+    canvasAriaTouch:
+      'مجسم تفاعلي ثلاثي الأبعاد لجسم الإنسان. اسحب بإصبع واحد للتدوير، قرّب بإصبعين للتكبير، اسحب بإصبعين للتحريك، والمس أي بنية لعرض اسمها وتفاصيلها.',
+    loadingTitle: 'جارٍ بناء جسم الإنسان…',
+    loadingSubDefault: 'جارٍ تحميل النماذج التشريحية الواقعية',
+    loadingLayer: (layerName) => `جارٍ تحميل ${layerName}…`,
+    loadingProgress: (pct, loadedMb, totalMb) => `${pct}% · ${loadedMb} من ${totalMb} ميجابايت`,
+    brandTitle: 'أطلس جسم الإنسان 3D',
+    brandSubtitle: 'أنثى وذكر · 2,225 بنية تشريحية مسمّاة',
+    searchLabel: 'ابحث عن أي جزء في الجسم',
+    searchPlaceholder: 'ابحث عن أي عضو — قلب، عظم الفخذ، رحم، أبهر، عضلة ذات الرأسين…',
+    searchResultsAria: 'أجزاء الجسم المطابقة',
+    searchStillLoading: 'لا يزال المجسم قيد التحميل — لحظة من فضلك…',
+    searchNoMatch: 'لا توجد نتائج. جرّب «قلب» أو «عظم الفخذ» أو «رحم» أو «أبهر» أو «دماغ».',
+    structuresCount: (n) => `${n} ${n === 1 ? 'بنية' : 'بنيات'}`,
+    sexGroupAria: 'تشريح الجسم',
+    female: 'أنثى',
+    male: 'ذكر',
+    audienceGroupAria: 'مستوى الشرح',
+    kids: 'للأطفال',
+    pro: 'سريري',
+    langGroupAria: 'اللغة',
+    danceBtn: '💃 رقص',
+    danceActiveBtn: '🕺 يرقص!',
+    danceAria: 'اجعل المجسم ثلاثي الأبعاد يرقص',
+    quizBtn: 'اختبار',
+    viewBarAria: 'عروض أجهزة الجسم',
+    viewPresets: {
+      skin: 'الجلد',
+      muscles: 'العضلات',
+      skeleton: 'الهيكل العظمي',
+      circulation: 'الأوعية وتدفق الدم',
+      organs: 'الأعضاء',
+      nervous: 'الدماغ والأعصاب',
+      xray: 'أشعة سينية (كل الأجهزة)'
+    },
+    layerNames: {
+      skin: 'الجلد',
+      muscles: 'العضلات',
+      skeleton: 'الهيكل العظمي',
+      vessels: 'الأوردة والشرايين',
+      organs: 'الأعضاء',
+      nerves: 'الدماغ والأعصاب'
+    },
+    layerLabels: {
+      skin: 'الجلد والسطح',
+      muscles: 'الجهاز العضلي',
+      skeleton: 'الجهاز الهيكلي',
+      vessels: 'الجهاز القلبي الوعائي',
+      organs: 'الأعضاء الداخلية',
+      nerves: 'الجهاز العصبي',
+      default: 'التشريح'
+    },
+    leftPanelAria: 'عناصر التحكم في العرض',
+    layersTitle: 'الطبقات',
+    layersHint: 'خفّف شفافية أي طبقة لرؤية ما تحتها.',
+    heartPanelTitle: 'القلب وتدفق الدم',
+    heartRateLabel: 'معدل نبض القلب',
+    bpmUnit: (v) => `${v} نبضة/دقيقة`,
+    legendArteries: 'شرايين (غنية بالأكسجين)',
+    legendVeins: 'أوردة (دم عائد للقلب)',
+    bloodFlowBtn: 'حركة تدفق الدم',
+    displayPanelTitle: 'العرض',
+    labelsBtn: 'التسميات',
+    isolateBtn: 'عزل الجزء المحدد',
+    autoRotateBtn: 'تدوير تلقائي',
+    resetViewBtn: 'إعادة ضبط المنظر',
+    qualityLabel: 'جودة العرض',
+    qualityHigh: 'عالية (ظلال ناعمة + إطباق محيطي)',
+    qualityBalanced: 'متوازنة',
+    qualityFast: 'سريعة (للأجهزة الأقدم)',
+    skinToneLabel: 'لون البشرة',
+    skinToneSwatchAria: (name) => {
+      const m = { light: 'فاتحة', medium: 'متوسطة', tan: 'حنطية', brown: 'سمراء دافئة', deep: 'داكنة', Light: 'فاتحة', Medium: 'متوسطة', Tan: 'حنطية', 'Warm Brown': 'سمراء دافئة', Deep: 'داكنة' };
+      return `بشرة ${m[name] || name}`;
+    },
+    inspectorAria: 'الجزء التشريحي المحدد',
+    emptyTitle: 'استكشف جسم الإنسان',
+    emptyDesc: 'مرّر المؤشر فوق المجسم لرؤية الأسماء. انقر على أي بنية — أو ابحث في الأعلى — للتكبير والتعرّف عليها.',
+    emptyDescTouch: 'المس أي بنية على المجسم ثلاثي الأبعاد — أو ابحث في الأعلى — للتكبير والتعرّف عليها.',
+    tips: [
+      { bold: 'اسحب', rest: ' للتدوير · ', bold2: 'مرّر العجلة', rest2: ' للتكبير نحو المؤشر' },
+      { bold: 'اسحب بالزر الأيمن', rest: ' (أو بإصبعين) للتحريك' },
+      { rest: 'اختر جهازاً من الأعلى: الجلد، العضلات، الهيكل العظمي، الأوعية، الأعضاء، الأعصاب' }
+    ],
+    tipsTouch: [
+      { bold: 'اسحب بإصبع واحد', rest: ' للتدوير · ', bold2: 'قرّب بإصبعين', rest2: ' للتكبير' },
+      { bold: 'اسحب بإصبعين', rest: ' للتحريك · ', bold2: 'المس', rest2: ' أي جزء لفحصه' },
+      { rest: 'اختر جهازاً من الأعلى: الجلد، العضلات، الهيكل العظمي، الأوعية، الأعضاء، الأعصاب' }
+    ],
+    readAloudBtn: '🔊 قراءة صوتية',
+    readAloudAria: 'قراءة بصوت عالٍ',
+    stopSpeakBtn: '⏹️ إيقاف',
+    stopSpeakAria: 'إيقاف القراءة الصوتية',
+    zoomPartBtn: 'تكبير هذا الجزء',
+    isolatePartBtn: 'إظهار هذا فقط',
+    showAllBtn: 'إظهار الكل',
+    clearBtn: 'مسح',
+    sayIt: (pron) => `النطق: «${pron}»`,
+    sideLabel: (side) => `الجانب ${side === 'left' ? 'الأيسر' : side === 'right' ? 'الأيمن' : side}`,
+    partOfChip: (name) => `جزء من: ${name} — إظهار الكل`,
+    belongsTo: 'ينتمي إلى',
+    structuresInSelection: 'البنيات ضمن هذا التحديد',
+    moreChip: (n) => `+${n} أخرى`,
+    whyYouNeedIt: 'لماذا يحتاج جسمك إليه؟',
+    fastFacts: 'حقائق سريعة',
+    funFacts: 'معلومات ممتعة',
+    arterialSupply: 'التروية الشريانية',
+    venousDrainage: 'التصريف الوريدي',
+    innervation: 'التعصيب',
+    attachmentsRelations: 'المناشئ والمغارز والعلاقات التشريحية',
+    referenceValues: 'القيم المرجعية',
+    clinicalCorrelation: 'الأهمية السريرية',
+    sourceModel: (fj, fma) => `النموذج: عنصر BodyParts3D رقم ${fj} · مفهوم FMA رقم ${fma || 'غير متوفر'}`,
+    sourceRecon: (fma) => `المصدر: سطح مُعاد بناؤه من حدود BodyParts3D التشريحية · مفهوم FMA رقم ${fma || 'غير متوفر'}`,
+    sourceVhf: (fma) => `المصدر: أطلس NIH HuBMAP المرجعي للإنسان المرئي الأنثوي (CC BY 4.0) · مفهوم FMA رقم ${fma || 'غير متوفر'}`,
+    zoomOutAria: 'تصغير',
+    zoomInAria: 'تكبير',
+    zoomLabel: 'التكبير',
+    footerAttribution: 'التشريح ثلاثي الأبعاد: BodyParts3D © DBCLS & NIH HuBMAP Human Reference Atlas (Visible Human Female), CC BY 4.0',
+    quizTitle: 'اختبار التشريح',
+    quizCloseBtn: 'إغلاق',
+    quizCloseAria: 'إغلاق الاختبار',
+    quizStep: (curr, total, score) => `السؤال ${curr} من ${total} · النتيجة ${score}`,
+    quizNextBtn: 'السؤال التالي',
+    quizSeeScoreBtn: 'عرض نتيجتي',
+    quizScoreTitle: (score, total) => `لقد أحرزت ${score} من ${total}!`,
+    quizPerfectLead: 'ممتاز — أنت خبير حقيقي في تشريح جسم الإنسان!',
+    quizGoodLead: 'استكشاف رائع! العب مرة أخرى أو واصل اكتشاف أسرار الجسم.',
+    quizPlayAgainBtn: 'العب مرة أخرى',
+    mobileLayersBtn: '⚙️ الطبقات',
+    mobileLayersAria: 'فتح الطبقات وعناصر التحكم',
+    mobileDrawerTitle: 'الطبقات والتحكم',
+    closeControlsAria: 'إغلاق عناصر التحكم',
+    minimizeInspectorAria: 'تصغير لوحة التفاصيل',
+    expandInspectorAria: 'توسيع لوحة التفاصيل',
+    errorLoadModels: 'تعذّر تحميل النماذج ثلاثية الأبعاد. يرجى التحقق من الاتصال وإعادة تحميل الصفحة.',
+    errorWebgl: 'لم يتمكّن المتصفح من تشغيل العارض ثلاثي الأبعاد (يتطلب WebGL 2).'
   }
 };
 
@@ -1382,7 +1673,9 @@ const PARTS_BY_LANG = {
   ko: PARTS_KO,
   pt: PARTS_PT,
   fr: PARTS_FR,
-  it: PARTS_IT
+  it: PARTS_IT,
+  de: PARTS_DE,
+  ar: PARTS_AR
 };
 
 const TISSUE_BY_LANG = {
@@ -1393,7 +1686,9 @@ const TISSUE_BY_LANG = {
   ko: TISSUE_INFO_KO,
   pt: TISSUE_INFO_PT,
   fr: TISSUE_INFO_FR,
-  it: TISSUE_INFO_IT
+  it: TISSUE_INFO_IT,
+  de: TISSUE_INFO_DE,
+  ar: TISSUE_INFO_AR
 };
 
 const QUIZ_BY_LANG = {
@@ -1404,7 +1699,9 @@ const QUIZ_BY_LANG = {
   ko: QUIZ_QUESTIONS_KO,
   pt: QUIZ_QUESTIONS_PT,
   fr: QUIZ_QUESTIONS_FR,
-  it: QUIZ_QUESTIONS_IT
+  it: QUIZ_QUESTIONS_IT,
+  de: QUIZ_QUESTIONS_DE,
+  ar: QUIZ_QUESTIONS_AR
 };
 
 export function getLocalizedPart(curatedEntry, lang = 'en') {

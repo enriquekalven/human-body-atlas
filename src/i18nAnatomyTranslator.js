@@ -829,7 +829,9 @@ const translationCache = {
   ko: new Map(),
   pt: new Map(),
   fr: new Map(),
-  it: new Map()
+  it: new Map(),
+  de: new Map(),
+  ar: new Map()
 };
 
 const SIMP_TO_TRAD_PHRASES = [
@@ -982,7 +984,7 @@ function capFirst(s) {
 }
 
 /**
- * Translate any anatomical structure or group name from English into `en`, `es`, `zh`, `yue`, `ja`, `ko`, `pt`, `fr`, or `it`.
+ * Translate any anatomical structure or group name from English into `en`, `es`, `zh`, `yue`, `ja`, `ko`, `pt`, `fr`, `it`, `de`, or `ar`.
  */
 export function translateAnatomyName(englishName, lang = 'en') {
   if (!englishName || lang === 'en') return englishName || '';
@@ -1007,7 +1009,15 @@ export function translateAnatomyName(englishName, lang = 'en') {
         ? EXACT_NAMES[lower].zh
         : translateToChinese(lower, englishName);
     out = toTraditionalChinese(zhOut);
-  } else if (lang === 'ja' || lang === 'ko' || lang === 'pt' || lang === 'fr' || lang === 'it') {
+  } else if (
+    lang === 'ja' ||
+    lang === 'ko' ||
+    lang === 'pt' ||
+    lang === 'fr' ||
+    lang === 'it' ||
+    lang === 'de' ||
+    lang === 'ar'
+  ) {
     out = translateExtraLang(lower, englishName, lang);
   } else {
     out = englishName;
