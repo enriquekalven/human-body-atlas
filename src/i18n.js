@@ -1426,10 +1426,11 @@ export function getLocalizedPart(curatedEntry, lang = 'en') {
 
 export function getLocalizedTissueInfo(tissueKey, lang = 'en') {
   const l = normalizeLang(lang);
-  const fallback = TISSUE_INFO[tissueKey] || TISSUE_INFO.organ;
+  const k = tissueKey === 'cornea' || tissueKey === 'iris' ? 'eye' : tissueKey;
+  const fallback = TISSUE_INFO[k] || TISSUE_INFO.organ;
   if (l === 'en') return fallback;
   const dict = TISSUE_BY_LANG[l] || null;
-  if (dict && dict[tissueKey]) return dict[tissueKey];
+  if (dict && dict[k]) return dict[k];
   if (dict && dict.organ) return dict.organ;
   return fallback;
 }

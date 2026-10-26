@@ -7,7 +7,7 @@
 
 import { AnatomyViewer, LAYER_IDS, VIEW_PRESETS, isMobileDevice } from './viewer/AnatomyViewer.js';
 import { ANATOMY_PARTS } from './anatomyData.js';
-import { buildSearchIndex, searchAnatomy, resolveCuratedMembers, layerLabel } from './content.js';
+import { buildSearchIndex, searchAnatomy, resolveCuratedMembers, layerLabel, TISSUE_INFO } from './content.js';
 import { SKIN_TONES } from './viewer/materials.js';
 import {
   initAnalytics,
@@ -1158,8 +1158,12 @@ class AtlasApp {
 
   _dominantTissue(parts) {
     const counts = new Map();
-    for (const p of parts) counts.set(p.mat, (counts.get(p.mat) || 0) + 1);
-    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    for (const p of parts) {
+      const mat = p.mat === 'cornea' || p.mat === 'iris' ? 'eye' : p.mat;
+      counts.set(mat, (counts.get(mat) || 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    return TISSUE_INFO[top] ? top : 'organ';
   }
 
   _renderKids(body, c) {
@@ -1270,7 +1274,7 @@ class AtlasApp {
     this.isSpeaking = true;
     this._syncSpeakButton();
 
-    // Pre-rendered Chirp3-HD Studio MP3s exist for en, es, zh; other languages use Neural Browser TTS directly
+    // Pre-rendered Chirp3-HD Studio MP3s exist for all 9 supported languages; fallback to Neural Browser TTS on error
     const hasStudioAudio = STUDIO_AUDIO_LANGS.includes(this.lang);
     if (!hasStudioAudio) {
       this._speakWithBrowserTTS(narration.cleanedText);

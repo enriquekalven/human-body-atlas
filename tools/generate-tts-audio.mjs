@@ -3,8 +3,8 @@
  * Studio Chirp 3 HD Read Aloud Audio Generator & Verifier for Human Body 3D Atlas.
  *
  * Scope:
- *   - 8 languages: en, es, zh, ja, ko, pt, fr, it
- *   - 128 keys per language (27 curated parts × kids/pro + 37 tissues × kids/pro) = 1,024 clips
+ *   - 9 languages: en, es, zh, yue, ja, ko, pt, fr, it
+ *   - 128 keys per language (27 curated parts × kids/pro + 37 tissues × kids/pro) = 1,152 clips
  *   - Single source of truth: imports buildSelectionNarration, VOICE_CONFIG, splitTextIntoByteChunks from ../src/narration.js
  *   - Sentence-boundary UTF-8 byte chunking (<= 4,500 bytes per API call, concatenating MP3 buffers in order)
  *   - Concurrency <= 4 with exponential backoff on HTTP 429 / 5xx and automatic token refresh
@@ -297,11 +297,11 @@ async function main() {
         if (process.env.FORCE_REGEN !== '1') {
           const diskBuf = await checkDiskClip(mp3Path);
           if (diskBuf) {
-            if (!existing || existing.bytes !== diskBuf.length || !existing.sha256) {
+            if (!existing || existing.bytes !== diskBuf.length || existing.sha256 !== task.sha256) {
               manifest[task.key] = {
                 sha256: task.sha256,
                 bytes: diskBuf.length,
-                durationSec: probeDurationSec(mp3Path)
+                durationSec: existing?.durationSec || probeDurationSec(mp3Path)
               };
             }
             skipped++;

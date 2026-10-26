@@ -6,21 +6,17 @@
   "audioEncoding": "MP3",
   "sampleRateHertz": 24000,
   "clipCount": 128,
-  "generatedAt": "2026-10-26T12:20:07.615Z",
+  "generatedAt": "2026-10-26T17:48:29.095Z",
   "clips": {
     "kids_aorta": {
-      "sha256": "7c4c5b1d5452ec3444abbba550e1db6c83d86ba43334dc9c187c3efcac4d481d",
+      "sha256": "3003609e9e1d567df0b0cc23f6f3fb3dfa2d39766b7bdb1a52451a031ac0c881",
       "bytes": 122400,
-      "durationSec": 30.6,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.057Z"
+      "durationSec": 30.6
     },
     "kids_biceps-triceps": {
-      "sha256": "a374a735969bd58f7a4c19ad9c3010c94430d37950e827820804bfb8f1d5be53",
+      "sha256": "87c8ad42728d4db2d6bf6cec794d9c00b88ca10c93edf9930a125b87f77627bf",
       "bytes": 106560,
-      "durationSec": 26.64,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.426Z"
+      "durationSec": 26.64
     },
     "kids_brachial-radial-vessels": {
       "sha256": "a476b6500b7a1203cc53365607d6136cba82681b373e47087264f105e78d6d6a",
@@ -30,39 +26,29 @@
       "updatedAt": "2026-10-22T15:47:43.156Z"
     },
     "kids_brain": {
-      "sha256": "fa0acb7f867e28de3d1719b239e5ffc0c9e133df6f49506e8c6cd0ef89a92ee5",
+      "sha256": "f949b37c710de0917cd4796a43ca63bc34462340ce61d3fad955d653367db31e",
       "bytes": 100512,
-      "durationSec": 25.128,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:42.809Z"
+      "durationSec": 25.128
     },
     "kids_carotid-jugular": {
-      "sha256": "023bc61818870a2318e275a433c9128fdd91214a538872748e5a60ef03685efa",
+      "sha256": "45a49acb3bbbf27e06361c8bf832c355502f86c7e4d2962e3a9f4bb08c0cdc72",
       "bytes": 94464,
-      "durationSec": 23.616,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.127Z"
+      "durationSec": 23.616
     },
     "kids_female-reproductive": {
-      "sha256": "d6ac2775b543216395de6953dfa4c064aff04d4bbc619ffedf72f0240111a6cf",
+      "sha256": "ac8bba2648632610b3b8a650241e500e4ab9d2da2824024a2a32620a61d7acd4",
       "bytes": 142464,
-      "durationSec": 35.616,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.548Z"
+      "durationSec": 35.616
     },
     "kids_femoral-saphenous-vessels": {
-      "sha256": "d9b21849ef7dd70c50939a233397de34489240c51ec6fee310ac36486243ee76",
+      "sha256": "f4ae0fd193206dbdecf8e88d8c474cc865abdb20ba3e2e9bd0e4226f35115323",
       "bytes": 130368,
-      "durationSec": 32.592,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.185Z"
+      "durationSec": 32.592
     },
     "kids_femur-tibia-fibula": {
-      "sha256": "d983d5b8b9dd49d9c2d1a981260fa1ecd30fc8a6b4f60eec6cd497c4b4139c36",
+      "sha256": "62850afb16a40ef54e8c30a3386c097e7a67cc323cb982ccec54bc5d75e55495",
       "bytes": 117696,
-      "durationSec": 29.424,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.368Z"
+      "durationSec": 29.424
     },
     "kids_heart": {
       "sha256": "2e6aa95bd19ba56f2b65acce34dd72f6170540742dd22f5b0988b677e4387caa",
@@ -79,11 +65,9 @@
       "updatedAt": "2026-10-22T15:47:43.308Z"
     },
     "kids_integumentary-skin": {
-      "sha256": "952c2e8ee50ecf533664114b67257bf3f4a9ce8e4ae052bd2293891f8da00002",
+      "sha256": "71e3b7b73fd95047685dee2712645f3e83e75df508ec2cc2283b2a9bf100c91a",
       "bytes": 94464,
-      "durationSec": 23.616,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:42.765Z"
+      "durationSec": 23.616
     },
     "kids_intestines": {
       "sha256": "c239a494d5a589b342a4e3c212e552acf027a6b21fc5772148f8d31e57874f32",
@@ -100,11 +84,9 @@
       "updatedAt": "2026-10-22T15:47:42.992Z"
     },
     "kids_liver": {
-      "sha256": "331a4bd212f2866e2bdaf6131b7f2d68aee19b6299bfe4d5f4758714ebe1b9e2",
+      "sha256": "1356ddd1b539ee1954cc35f43edbcd059d2bc636533daf56ea195d9a0d71ed97",
       "bytes": 88896,
-      "durationSec": 22.224,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:42.917Z"
+      "durationSec": 22.224
     },
     "kids_lungs": {
       "sha256": "4fa9cbb05d390202edefac76adbab95a0b2b61cd63fe37bdd68b0ad9e3c7b0ef",
@@ -114,81 +96,59 @@
       "updatedAt": "2026-10-22T15:47:42.881Z"
     },
     "kids_male-reproductive": {
-      "sha256": "9934419ac29842cb889f8df092a4046f3b87cac029928405ed110c6089c0b66e",
+      "sha256": "f3ce303ed10ac089eeaf78032a229f007ea7ae95ae34aa73cae47156faeb2142",
       "bytes": 105504,
-      "durationSec": 26.376,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.607Z"
+      "durationSec": 26.376
     },
     "kids_mammary-glands": {
-      "sha256": "dec2c02870e57aef33435f99a3dbeadb4ac6606b8e4f7684403a3721d2948533",
+      "sha256": "c7b1a7cc50a4adfb1bd1cf940a872e87d17f0a1ca733457de2f471be4154e171",
       "bytes": 121152,
-      "durationSec": 30.288,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.576Z"
+      "durationSec": 30.288
     },
     "kids_pectoralis-deltoid": {
-      "sha256": "c281e6c569b9283945f897208bbdb115f8266797fb89a4a69f5936a3a55d8dda",
+      "sha256": "6c9c3ce30ed2fe80cbe72ba007293479d91c371a7eaec952c6e026102438cb3d",
       "bytes": 117120,
-      "durationSec": 29.28,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.399Z"
+      "durationSec": 29.28
     },
     "kids_pelvis": {
-      "sha256": "28d52db564364396a83b57a0b55fb79ff87af08e93e7ebb98e71a55ecfcea8a5",
+      "sha256": "ddfc7c770788dbf657a118d8ab934ba08124d591adc1050847f349ae0fe68d78",
       "bytes": 91008,
-      "durationSec": 22.752,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.341Z"
+      "durationSec": 22.752
     },
     "kids_quadriceps-gastrocnemius": {
-      "sha256": "b2c57e6c7097a0c945a354b88f4b91df443ddfc618f42e10dd30f1adcedec0c1",
+      "sha256": "bf44391779c87dae1b7ef4c623d5d3a3bab35e844ef518f394983d6faba972cc",
       "bytes": 119520,
-      "durationSec": 29.88,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.489Z"
+      "durationSec": 29.88
     },
     "kids_rectus-abdominis-diaphragm": {
-      "sha256": "4a5c106e728373480af1056758242171fa42ca5c1c1d89415820515d5970d9dc",
+      "sha256": "9cfffdb7029a501ca2f68317674762a8bb9ba2148e1b6780a23671fcceae28ed",
       "bytes": 106848,
-      "durationSec": 26.712,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.460Z"
+      "durationSec": 26.712
     },
     "kids_rib-cage": {
-      "sha256": "065ae8b41bd940741151f2fc2c314883a65d81653d8dc99783a3c40a6f3d7dbe",
+      "sha256": "a32e67565d02bf106190d27c4c05f8df867de43dbdf91f249f0a1ebfbd98418d",
       "bytes": 112896,
-      "durationSec": 28.224,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.250Z"
+      "durationSec": 28.224
     },
     "kids_skull": {
-      "sha256": "aa03ba250bc3d9a666347462a9f20ce69c1fed302e3861c401c8bddefa4bf8c2",
+      "sha256": "a0573b7012c20f420a0e7558fcbf1c76f7454259f3566abd02f2a4ad045cefc2",
       "bytes": 101280,
-      "durationSec": 25.32,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.220Z"
+      "durationSec": 25.32
     },
     "kids_spinal-cord-sciatic": {
-      "sha256": "c754c055c9ab46aecca56df77b769d5119891e22d280942fbba9dc6536ab0582",
+      "sha256": "027c0d9613691187a22c20fba6e5b6b72ab624b518a441b78084db8260c0e2db",
       "bytes": 119808,
-      "durationSec": 29.952,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.518Z"
+      "durationSec": 29.952
     },
     "kids_spine": {
-      "sha256": "d01fcbaf32149d425aaad83410b0ae1b14c6efb72795494f37a065bb2343c3d0",
+      "sha256": "e25edeb5edf714327753ea478f1169feacc1c16c39f0a687eb93f19cfa07cc5c",
       "bytes": 119808,
-      "durationSec": 29.952,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.279Z"
+      "durationSec": 29.952
     },
     "kids_stomach": {
-      "sha256": "80decc1dc20948c635af6915fc1fe42ecf10f7b2bba2b47cf9e5e921df38ce17",
+      "sha256": "67dabc1f6c35f36f4d0e9fd9a42de145e2cdf6c5141d0d97552bf286229539b4",
       "bytes": 87360,
-      "durationSec": 21.84,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:42.954Z"
+      "durationSec": 21.84
     },
     "kids_tissue_airway": {
       "sha256": "82f883f3c451308084f1696760ab59123e04d9a441e4327923f808eae0de52c2",
@@ -205,11 +165,9 @@
       "updatedAt": "2026-10-22T15:47:43.924Z"
     },
     "kids_tissue_arteryDeoxy": {
-      "sha256": "19a4b5ec1405d6c568aa4007e20d08a31cb0a4d48ddcf6bd4ff02bcda390abd1",
+      "sha256": "36994ad7e5fcb54ad48d8d87c6f841f94117a4030f71aab4090e5cfa68c7a825",
       "bytes": 35808,
-      "durationSec": 8.952,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.964Z"
+      "durationSec": 8.952
     },
     "kids_tissue_bladder": {
       "sha256": "7c237f1b669da247eb8748d45c7362e8141593601c1487c8f1602f7218429dfb",
@@ -331,11 +289,9 @@
       "updatedAt": "2026-10-22T15:47:44.746Z"
     },
     "kids_tissue_liver": {
-      "sha256": "6648db1f9812029582090a383e004187e6ccf1fc5aa9177b6e26ab90e0a09206",
+      "sha256": "e2b705b848f1b3d17f5dd630947ebf6acb0b430b311d37a1281c24323d2178f9",
       "bytes": 27648,
-      "durationSec": 6.912,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:44.299Z"
+      "durationSec": 6.912
     },
     "kids_tissue_lung": {
       "sha256": "332d7df187f5db9d2e8d8053460dc09d45ae393205a5be7726c46e6b44a2f263",
@@ -450,39 +406,29 @@
       "updatedAt": "2026-10-22T15:47:44.036Z"
     },
     "kids_vena-cava": {
-      "sha256": "18885c56b5641c94e68853f548f95747b2c27ed85f157268cd9cf42b909ad198",
+      "sha256": "e881c027c2cd447383be1c68ccb5b860cbd15a54087ebb69d9065ac203d91974",
       "bytes": 131712,
-      "durationSec": 32.928,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:43.092Z"
+      "durationSec": 32.928
     },
     "pro_aorta": {
-      "sha256": "7433f6b62e67d6f1af2dc84aa3d80d026698ef9f049fca8d89554bee73e50ff1",
+      "sha256": "c9c1a044815c3bd5ba540cf961b64ad15da3005450a3f7df8cba271b02fd8721",
       "bytes": 129600,
-      "durationSec": 32.4,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.170Z"
+      "durationSec": 32.4
     },
     "pro_biceps-triceps": {
-      "sha256": "72b4404232833e05c48b5fa936ba4bb58876214df499bd235c3d516574ff7849",
+      "sha256": "7a102a1630bd9030bc89146e8ebbd4effdc1f0e0de73a2d9a287023f2f9e4123",
       "bytes": 150432,
-      "durationSec": 37.608,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.584Z"
+      "durationSec": 37.608
     },
     "pro_brachial-radial-vessels": {
-      "sha256": "227bc598f189e963e2ce3701ebc191e943bd998867a6a7d802d4cb83d0d8d7b2",
+      "sha256": "b882b836f5f18ca3db377a2f8e50e99f61be9ff6c5cc5f8417823b0333b8e478",
       "bytes": 141696,
-      "durationSec": 35.424,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.260Z"
+      "durationSec": 35.424
     },
     "pro_brain": {
-      "sha256": "9d773451abc64138dc3877fba9a6b241632f535b38781f7d61332f15362a40d7",
+      "sha256": "62e77c139faede26bb2a727d813fac0f5bd44ee82be626bddb76b9b664b6c9d8",
       "bytes": 152832,
-      "durationSec": 38.208,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:44.962Z"
+      "durationSec": 38.208
     },
     "pro_carotid-jugular": {
       "sha256": "206d2a080e0835011d3f49239c3e199637e84f2bbc2e573aaa5e6e8938e19de8",
@@ -492,186 +438,134 @@
       "updatedAt": "2026-10-22T15:47:45.231Z"
     },
     "pro_female-reproductive": {
-      "sha256": "f00bf01ffd5eb7af88a735f2571f3483c91a8cfec974fc64d5674cf8761f3415",
+      "sha256": "ee8944165f94690b43d2f2562845029f6d472b9e7f2f13441b8b0a3782e5018b",
       "bytes": 223776,
-      "durationSec": 55.944,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.748Z"
+      "durationSec": 55.944
     },
     "pro_femoral-saphenous-vessels": {
-      "sha256": "2490e984bad1f282c25fbe636f1e202c69c5cfedb9963c907694b6514d18f9de",
+      "sha256": "c37dca54a83cd7fcf7bf6769448aa290548798b9bbed624e1317f1f9fd163ac5",
       "bytes": 173376,
-      "durationSec": 43.344,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.289Z"
+      "durationSec": 43.344
     },
     "pro_femur-tibia-fibula": {
-      "sha256": "df275bbb473d0b13e891e47e590577b6a374629a66678671374c646070cce1da",
+      "sha256": "e9f065239d23bfb50c097dce0353b61a8d2af8fe334769bdbbb452f4acc30c01",
       "bytes": 138240,
-      "durationSec": 34.56,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.521Z"
+      "durationSec": 34.56
     },
     "pro_heart": {
-      "sha256": "9c30d41ba40d461c011d638366ff62be975521828e1362b59454954fda5080fb",
+      "sha256": "ccbcb7dd76b254418008ede42adc7dab892ef4326eb0779aecbfd4f07beabcb7",
       "bytes": 137760,
-      "durationSec": 34.44,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:44.993Z"
+      "durationSec": 34.44
     },
     "pro_humerus-radius-ulna": {
-      "sha256": "c3937c074db76e731776ce8675ad4c6151a924d495902bb0dbf8cc2656903dca",
+      "sha256": "ba9942273edd0d2ef514213822bf241deb9ea7d95263357fbc9c07ccdebcd356",
       "bytes": 146208,
-      "durationSec": 36.552,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.434Z"
+      "durationSec": 36.552
     },
     "pro_integumentary-skin": {
-      "sha256": "904a2c757ca839a58e9971937989841e8758a35aed1bba8f5e8c62efa73498f5",
+      "sha256": "66eec3a135b7794fe6988566692630acd5ee9693d4e71f58d026d70072487e64",
       "bytes": 112128,
-      "durationSec": 28.032,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:44.935Z"
+      "durationSec": 28.032
     },
     "pro_intestines": {
-      "sha256": "4bd88973ec24bfb495be12afb7b47064b2af868ae75bd830916ccec02c0e6d5c",
+      "sha256": "22bc57e86d23e6a9fcd34dd31b9607ac5bd120221c7e88c82b3631998b85c671",
       "bytes": 136416,
-      "durationSec": 34.104,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.144Z"
+      "durationSec": 34.104
     },
     "pro_kidneys": {
-      "sha256": "b3c45c619754b5a647a1a33f3c2de503fb4b196419096a25734494dd2a9dc2b7",
+      "sha256": "8a86356ec9982adedd75c85af6b935d8ffa1dbb5326779cb11473af060783d70",
       "bytes": 148032,
-      "durationSec": 37.008,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.119Z"
+      "durationSec": 37.008
     },
     "pro_liver": {
-      "sha256": "b3618cc8e96a207138ffd13e8b52df2ffc34110f3de0856a1cca508db9644e4b",
+      "sha256": "0137f5e9bd476d36291c98e722e296c5afe503a0b08dfeb1c6315f2fe4886540",
       "bytes": 90240,
-      "durationSec": 22.56,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.058Z"
+      "durationSec": 22.56
     },
     "pro_lungs": {
-      "sha256": "7b08b15c55d6a051e5b14bf1970901dc21db9744bf4eb4cc8ac0c6e7e8991707",
+      "sha256": "4d65cfae4d141e5a9c16dab167494d9df3c794de0e46351eb4412d9705b1d9d0",
       "bytes": 130080,
-      "durationSec": 32.52,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.027Z"
+      "durationSec": 32.52
     },
     "pro_male-reproductive": {
-      "sha256": "5543f6019a76b242452168b9748f84701654f3d35b1a1b8c388aeeb02fc2c67c",
+      "sha256": "3f876220d3dcf5ddf5d945920c87f9913f09dd03853c4c48b718aa6870178210",
       "bytes": 185280,
-      "durationSec": 46.32,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.848Z"
+      "durationSec": 46.32
     },
     "pro_mammary-glands": {
-      "sha256": "fa98833ce1f468326fbaaec1d56aff588bcafb992c0bba8b5df847fafaf0bb24",
+      "sha256": "f143bcd8d69c621460ff5593f1a79a11dad96f6a46aa6578ad7a2ec6d26bfc63",
       "bytes": 142752,
-      "durationSec": 35.688,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.791Z"
+      "durationSec": 35.688
     },
     "pro_pectoralis-deltoid": {
-      "sha256": "262009c93b4684baa394a4d99ad59c4f378761e68df25e2f669ba8069c6e5a63",
+      "sha256": "3dad13f13de632aac07a9ca2a57e745abc22681c4806a9ef16baf3532a0f7698",
       "bytes": 144576,
-      "durationSec": 36.144,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.553Z"
+      "durationSec": 36.144
     },
     "pro_pelvis": {
-      "sha256": "47b5032756e623283cf8dfba7e770bbff18a77b1f34f513ffd8f68cd824d758f",
+      "sha256": "ae1172748de235547de0acf72f850d52addd0083a479411e17f8c4dc3cf9527b",
       "bytes": 136992,
-      "durationSec": 34.248,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.497Z"
+      "durationSec": 34.248
     },
     "pro_quadriceps-gastrocnemius": {
-      "sha256": "71ef9d3cd4b26ef8cea86679a5150bc3d002abf7760969a3786f997885e6037b",
+      "sha256": "232ee2648b2c89873c59feee9930ee22516cb5dfc2425594b370a863e4322a3c",
       "bytes": 185280,
-      "durationSec": 46.32,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.666Z"
+      "durationSec": 46.32
     },
     "pro_rectus-abdominis-diaphragm": {
-      "sha256": "1f8a7d421eae9d45f28532b30042da6411df51501ffc338d3ecf32cc717a197d",
+      "sha256": "bc31c67b9fddec05c0ca420914755f664c728a490878b156ec8aea00c3b1b99d",
       "bytes": 170976,
-      "durationSec": 42.744,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.622Z"
+      "durationSec": 42.744
     },
     "pro_rib-cage": {
-      "sha256": "a947e5f23701204c6b77d23654c40f443888a59d89aea669ee13ad26f28d0fdc",
+      "sha256": "fbba4d905087209b7a125e99654f54e4080a9905316c0121ef6aaaada59c252e",
       "bytes": 176544,
-      "durationSec": 44.136,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.353Z"
+      "durationSec": 44.136
     },
     "pro_skull": {
-      "sha256": "90b263b9e5ade2ddb13cc3b85fd9936cf04426defb98e12687e50b2b3d2e8313",
+      "sha256": "d5ca68387630a09b7fffc2307a8a9abe56bdbfb251395cb2f02f9f10e810cdf7",
       "bytes": 165984,
-      "durationSec": 41.496,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.321Z"
+      "durationSec": 41.496
     },
     "pro_spinal-cord-sciatic": {
-      "sha256": "c5e5ed47d4b0491e1779e55dcc9a6fb664328859990f8f994e5e592b98d59b64",
+      "sha256": "52e96ebc1aae92798cc67b1377a671a70506cfde23187894817da9cc4258ec3c",
       "bytes": 186048,
-      "durationSec": 46.512,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.708Z"
+      "durationSec": 46.512
     },
     "pro_spine": {
-      "sha256": "1b2965b24ead58cee34e75f05d827549e946b7f323852cc2bba5e2d083889686",
+      "sha256": "b5a663e3c6f2a3b68155021d1c0b433517275937e6cf325a4e9195af4454efc8",
       "bytes": 182400,
-      "durationSec": 45.6,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.380Z"
+      "durationSec": 45.6
     },
     "pro_stomach": {
-      "sha256": "3d162941ab19ee8091ce50ad67b6b11081de38b58b79ac394bce5c242988c3e5",
+      "sha256": "568452dd35ccb8f6e2781ec8f82c6d03670f31aec28e4990cd0450516b294d07",
       "bytes": 144096,
-      "durationSec": 36.024,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.088Z"
+      "durationSec": 36.024
     },
     "pro_tissue_airway": {
-      "sha256": "f24ef7374e371945b174fdf8e16a56722378a0a040e1bdf0cf6b0fea20d41b1d",
+      "sha256": "98aa2b6a673d22b6e7f0a2698f6dbcaec00061ab37df890c91a4238ba37d6173",
       "bytes": 33216,
-      "durationSec": 8.304,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.455Z"
+      "durationSec": 8.304
     },
     "pro_tissue_artery": {
-      "sha256": "d9688185e31e138cff0e8854dbcb713fe76062443212f5c5e1bd8080a630f137",
+      "sha256": "35851a290b4b271e200cfea3ebdb058e234cf64cf274c2b3f2bb19719a64d2e4",
       "bytes": 41088,
-      "durationSec": 10.272,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.091Z"
+      "durationSec": 10.272
     },
     "pro_tissue_arteryDeoxy": {
-      "sha256": "673b6e7edb9b536ef8f915633513e146e456d0dc5cb575a2c42adcdaecdee223",
+      "sha256": "63e215d29b84299cde4637802f700f4478d25bab9b3aaec2e64ce9f271980776",
       "bytes": 38496,
-      "durationSec": 9.624,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.124Z"
+      "durationSec": 9.624
     },
     "pro_tissue_bladder": {
-      "sha256": "efced434e3c88c72bbec88f6c7efe0f2188ac4c036a7d34d8b6c6c41ee05b4dd",
+      "sha256": "b7e320c07eb4e95ea45991d3aba793bcab3f702811fb76e3facc8bf7789d0531",
       "bytes": 27648,
-      "durationSec": 6.912,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.668Z"
+      "durationSec": 6.912
     },
     "pro_tissue_bone": {
-      "sha256": "295578a817c483660e3ba0da198a276aafafeaf02ee02807530956e25518c4a5",
+      "sha256": "6d36797175be5f6156a1febd2970387deecadaa83680a2667f7bfd2e82efbf1f",
       "bytes": 34272,
-      "durationSec": 8.568,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.981Z"
+      "durationSec": 8.568
     },
     "pro_tissue_brain": {
       "sha256": "762a91f0865566e7c7e172efaf1bcd54bba4535a39d32b0c76f1f810c25046d4",
@@ -681,25 +575,19 @@
       "updatedAt": "2026-10-22T15:47:46.272Z"
     },
     "pro_tissue_cartilage": {
-      "sha256": "fc8e3a1685d05e77300f8c3012a57dc2a126ed6ee46eb392cf045f9b6e8ac8ef",
+      "sha256": "de01349a9eec5037edba6bbb44eabb5f08a1dc8887d6c63bc1d533851658a42f",
       "bytes": 34560,
-      "durationSec": 8.64,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.068Z"
+      "durationSec": 8.64
     },
     "pro_tissue_colon": {
-      "sha256": "3ff6394a6406a71955f2ba5dbc6f7cc7499456dc965a32bec2bce77845f5faeb",
+      "sha256": "b06f05a6d2b24a563fd02015722eb0985dc586d8619db9847e88078ef093935b",
       "bytes": 27936,
-      "durationSec": 6.984,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.588Z"
+      "durationSec": 6.984
     },
     "pro_tissue_cord": {
-      "sha256": "97d243e6921b9bb3a83b13459a77c304181c384a677efecdd6143703a7b5d16a",
+      "sha256": "7dab4c59b60f911b1c21955e4216dd4b024343279e6932b0ec1fb4a1697f3d90",
       "bytes": 35040,
-      "durationSec": 8.76,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.244Z"
+      "durationSec": 8.76
     },
     "pro_tissue_csf": {
       "sha256": "056c15417e4b19d8e8f52b6398e82d22be701ee520d6c527eda1c949673e696e",
@@ -709,11 +597,9 @@
       "updatedAt": "2026-10-22T15:47:46.341Z"
     },
     "pro_tissue_dura": {
-      "sha256": "722cf2788c443967ecc995c6fcc782d8f54e5d32a097ea356f7b9fa2aa733685",
+      "sha256": "e4bc434724c671e4396c745dc0a6f628221603bc03667d570d515ca8831c9559",
       "bytes": 30816,
-      "durationSec": 7.704,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.295Z"
+      "durationSec": 7.704
     },
     "pro_tissue_eye": {
       "sha256": "1b9c2fe02f1758829cb966a87979b37d3561b82ae84d0cff5a5d6a51aac7a32b",
@@ -723,11 +609,9 @@
       "updatedAt": "2026-10-22T15:47:46.720Z"
     },
     "pro_tissue_gallbladder": {
-      "sha256": "cb1f6a147ead89a298ec7501a3a6189ab3392c6c56e9018867edf2037020764c",
+      "sha256": "b61576d50c35779417ab69e572d22ac9af73f2613df5ee7454de04aa6505f173",
       "bytes": 26112,
-      "durationSec": 6.528,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.503Z"
+      "durationSec": 6.528
     },
     "pro_tissue_gland": {
       "sha256": "42c18009f38abbcb7929486d26a8e2cdf1235c391f9041b33ad69bcd650d52b5",
@@ -737,11 +621,9 @@
       "updatedAt": "2026-10-22T15:47:46.795Z"
     },
     "pro_tissue_hair": {
-      "sha256": "adb23ba09044a0b689978986a05e3cfb0dc914bc294962410d83ea8a6274fb59",
+      "sha256": "0f9820da999ceb79196ea1e5fa7afe1fc28720a0084ebccec8b6de3e6996ffea",
       "bytes": 35616,
-      "durationSec": 8.904,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.889Z"
+      "durationSec": 8.904
     },
     "pro_tissue_heart": {
       "sha256": "442fb569431efcfeee6297ae3daee6b63802cc8d66be29b6698e673b4dd3d2ac",
@@ -751,67 +633,49 @@
       "updatedAt": "2026-10-22T15:47:46.392Z"
     },
     "pro_tissue_intestine": {
-      "sha256": "7ca451ebe47fef66c366484695759592ae567f7ddf5a47360721d0403ad957c8",
+      "sha256": "ee4cea871e60291624dc5fba869f98d096a1e62370b3152bc7a691f40b514dbe",
       "bytes": 34272,
-      "durationSec": 8.568,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.557Z"
+      "durationSec": 8.568
     },
     "pro_tissue_kidney": {
-      "sha256": "e3bd4b70347b4e9ede3451087028dbba5df82561944d17ffbbf9131c8d513311",
+      "sha256": "5f13ffbaffe32fbce32fce4bc34274fe910b465333f0bee4917307799b6295dd",
       "bytes": 43488,
-      "durationSec": 10.872,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.636Z"
+      "durationSec": 10.872
     },
     "pro_tissue_ligament": {
-      "sha256": "a9bda82472b4ce8ef8509f116c8c00a44b8e8486485cea9e379a7b712373bb39",
+      "sha256": "576b271bda89f41cda1ff933ad64bd05c0f2411d988e25b7a8facc4eb03f77f8",
       "bytes": 26592,
-      "durationSec": 6.648,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.950Z"
+      "durationSec": 6.648
     },
     "pro_tissue_lip": {
-      "sha256": "a145a304c1d8624bdbb0f10e1ed8678dc04076d67abadeafa17f186f31625e4a",
+      "sha256": "e7131c857cd3def0c5c8f4c20365a56f5c024ce8320c8e9f3cd8af29e1c8aeab",
       "bytes": 46368,
-      "durationSec": 11.592,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.771Z"
+      "durationSec": 11.592
     },
     "pro_tissue_liver": {
-      "sha256": "1a981dbf2394da46d2e38b8c8674798b26f746c057ceb8bf6c3d2136b2cf0092",
+      "sha256": "7cc4e95e1427ec901d9142486f4eccc4c53c9b4d3a5eb847f13377ee9d3693e5",
       "bytes": 42432,
-      "durationSec": 10.608,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.481Z"
+      "durationSec": 10.608
     },
     "pro_tissue_lung": {
-      "sha256": "9867b8d7a291189145cce9121691a553fa38f9ebeee4af3bfd7b2286ac8aef6a",
+      "sha256": "879caacafb84e521f3f27761266b29e57e58ba33dd9710105e6525450f788f19",
       "bytes": 32160,
-      "durationSec": 8.04,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.423Z"
+      "durationSec": 8.04
     },
     "pro_tissue_mesentery": {
-      "sha256": "5b6e6177dd6c1162b1283485c6c6ad1d164d49405fd1837e7e125595ca5f11f4",
+      "sha256": "aaf34f88ef8bb2ac4cef74158e67efa431b9964eec06443fdd096664962107ca",
       "bytes": 24768,
-      "durationSec": 6.192,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.847Z"
+      "durationSec": 6.192
     },
     "pro_tissue_muscle": {
-      "sha256": "1e46114c24767858fc505c3adcc46dd43b61ec3aa78e3fd93c0677ea57b3d28b",
+      "sha256": "882ee63bf4192c6ebec86f5c1f2bc9ce1aeb61c0e0cbe788c46d7cdcf1423758",
       "bytes": 45312,
-      "durationSec": 11.328,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.909Z"
+      "durationSec": 11.328
     },
     "pro_tissue_nerve": {
-      "sha256": "72b4a462aabdb49b1df86950eac0d9c717104feac9e309e58e7c9152b1242aaa",
+      "sha256": "9564bd642b010ca2f979b4a791cc4a8b306f856f12947ffbda2cf3b7a83891de",
       "bytes": 34272,
-      "durationSec": 8.568,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.219Z"
+      "durationSec": 8.568
     },
     "pro_tissue_organ": {
       "sha256": "500414355358c6299bacf85a853366c2110b75b810f7a794b407520b8c876331",
@@ -821,18 +685,14 @@
       "updatedAt": "2026-10-22T15:47:46.891Z"
     },
     "pro_tissue_pancreas": {
-      "sha256": "210995f1580e5d30be2e0dd971e22f43193a6a25e061f4c3b98850fa627649b4",
+      "sha256": "1330a5c3aed9284360bd867b4033d907383dffd714dd88e4e7fd4286d7519f35",
       "bytes": 30336,
-      "durationSec": 7.584,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.611Z"
+      "durationSec": 7.584
     },
     "pro_tissue_pupil": {
-      "sha256": "3a5a815c3efd665dabd768726b314d7965fd9e3febc370ae99f4fb3c98a5e760",
+      "sha256": "13cfb591f0df761052b1e54defc503747509b95b8477374ed340f4d0746e0b9e",
       "bytes": 37728,
-      "durationSec": 9.432,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.743Z"
+      "durationSec": 9.432
     },
     "pro_tissue_reproductive": {
       "sha256": "d6829fda397610b2c489941df88469649d220400c8e88a557611a2779a127779",
@@ -842,46 +702,34 @@
       "updatedAt": "2026-10-22T15:47:46.869Z"
     },
     "pro_tissue_skin": {
-      "sha256": "d5d59587920de98502ca869f0e79cca2646b4ee57262d7ccd6d9c58e05c79a03",
+      "sha256": "e977e166e20e8323243c4b815e900c8958ceb9359235ccbf4e4d6897dad432a1",
       "bytes": 48000,
-      "durationSec": 12,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.868Z"
+      "durationSec": 12
     },
     "pro_tissue_spleen": {
-      "sha256": "50d22253ccf504df8fbfc175e3586fa9fd40b6945b6ed49ca2a9c9efe7d61f8d",
+      "sha256": "f04e463a6db4a810cff5a9baf81dc162cd3cd3b96ebdc3474f959e71f590d3ec",
       "bytes": 27168,
-      "durationSec": 6.792,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.698Z"
+      "durationSec": 6.792
     },
     "pro_tissue_stomach": {
-      "sha256": "02dfe8442b2b9d970fbe73ba0a5fe867e7752eb6eefaa10aef81920556747de0",
+      "sha256": "dbfdd3cc0b12a5d53171c9cd60d47a8c47c084869e4cb86d40dd4c01a7c0d362",
       "bytes": 25824,
-      "durationSec": 6.456,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.535Z"
+      "durationSec": 6.456
     },
     "pro_tissue_tendon": {
-      "sha256": "4f511f2f29f36006bee27d00d6b69a8ac9d9d4fa4571e2064ed1412ab4d2e7d0",
+      "sha256": "756b84c0cce84e7bce10280256729135ba139b360f84fca53adee5858afa9e4f",
       "bytes": 36384,
-      "durationSec": 9.096,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.929Z"
+      "durationSec": 9.096
     },
     "pro_tissue_tongue": {
-      "sha256": "5a609602ae895df856055edd218ebba28c8808052bbb36cbd996e9955927522c",
+      "sha256": "8c1db84c90c2a567500d1dde44c7ad1083d2136b0c8ba7f6a129b7a4f0fa321c",
       "bytes": 33216,
-      "durationSec": 8.304,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.823Z"
+      "durationSec": 8.304
     },
     "pro_tissue_tooth": {
-      "sha256": "966579b69915e48258efabaebdfce81f84c2eb196b9540c953e8b7e3bfcf432b",
+      "sha256": "7d10e00e0387574b10c946e14fabcd00e422813cf0ff6c2c42ca07f9542a4532",
       "bytes": 36672,
-      "durationSec": 9.168,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.019Z"
+      "durationSec": 9.168
     },
     "pro_tissue_vein": {
       "sha256": "6b98c2aa07685027687c7808be0712c5b8480d9fe6d4c78a513bb312fa353372",
@@ -891,18 +739,14 @@
       "updatedAt": "2026-10-22T15:47:46.166Z"
     },
     "pro_tissue_veinOxy": {
-      "sha256": "e0a728123eb0c83e396e5f66488fbf0541a4aaff0749f5c01ad7483b89777558",
+      "sha256": "4007a82ffe63023134bb51dc07d4626246e1e87824a54fa632021a7aa428e3e3",
       "bytes": 19200,
-      "durationSec": 4.8,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:46.190Z"
+      "durationSec": 4.8
     },
     "pro_vena-cava": {
-      "sha256": "abc92a5933aafa520bcc1162b0880e7c7b6894623d898202005543d4bfc66f74",
+      "sha256": "50564c37bd7ae5d80fa54886446fe68d5a1aa249ffb2381da59fad97e0466bf6",
       "bytes": 134304,
-      "durationSec": 33.576,
-      "chunks": 1,
-      "updatedAt": "2026-10-22T15:47:45.200Z"
+      "durationSec": 33.576
     }
   }
 }
