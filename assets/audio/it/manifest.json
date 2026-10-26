@@ -1,0 +1,652 @@
+{
+  "schemaVersion": 2,
+  "lang": "it",
+  "voice": "it-IT-Chirp3-HD-Aoede",
+  "languageCode": "it-IT",
+  "audioEncoding": "MP3",
+  "sampleRateHertz": 24000,
+  "clipCount": 128,
+  "generatedAt": "2026-10-26T12:23:46.944Z",
+  "clips": {
+    "kids_aorta": {
+      "sha256": "169bbe6895c66116121739f44eeb8d7bd408a4f7619e0045b083ef51676c2992",
+      "bytes": 118464,
+      "durationSec": 29.616
+    },
+    "kids_biceps-triceps": {
+      "sha256": "1fb83e97049d22d97b4439af148c07eba6bd28d061b954196f2f1ded8d85cb69",
+      "bytes": 106560,
+      "durationSec": 26.64
+    },
+    "kids_brachial-radial-vessels": {
+      "sha256": "6c26d425b7afd8bd988ad203b46964e9c07779e96095f71b0add905372f6f908",
+      "bytes": 101280,
+      "durationSec": 25.32
+    },
+    "kids_brain": {
+      "sha256": "288088c9ded2413bca60564445dbb8b207693715ae680d44e0bed942839425c7",
+      "bytes": 113952,
+      "durationSec": 28.488
+    },
+    "kids_carotid-jugular": {
+      "sha256": "6544d74ec55e3a46c812ce3f3b3393bf3847b5fc87f92d69e6760caf2e541fae",
+      "bytes": 95232,
+      "durationSec": 23.808
+    },
+    "kids_female-reproductive": {
+      "sha256": "4aace1d521688b881c34e54c7f4121540fe198dc4a20cc634b091bc48c053248",
+      "bytes": 115008,
+      "durationSec": 28.752
+    },
+    "kids_femoral-saphenous-vessels": {
+      "sha256": "80d3c8d3120320c465b7cf139023df48728528a59c745caeb1837928f162d5ba",
+      "bytes": 122400,
+      "durationSec": 30.6
+    },
+    "kids_femur-tibia-fibula": {
+      "sha256": "adf84b1e0c0c3038fc9ee65b793795a89ae500512aab694df09a2cc447813c06",
+      "bytes": 128256,
+      "durationSec": 32.064
+    },
+    "kids_heart": {
+      "sha256": "be36a3e23e8fdc2204140af1908be0de0990ee7cdcd71e12ad5da41250b20a7b",
+      "bytes": 104736,
+      "durationSec": 26.184
+    },
+    "kids_humerus-radius-ulna": {
+      "sha256": "e6ffb93d1ed68d106057c666c864161a2d51ee6c6afb9fd73e0dc84daa010fd6",
+      "bytes": 106560,
+      "durationSec": 26.64
+    },
+    "kids_integumentary-skin": {
+      "sha256": "297afb939fa844fcdfd37f550659f4a73a2fd93a61c4f290c6180591494f3ca3",
+      "bytes": 102336,
+      "durationSec": 25.584
+    },
+    "kids_intestines": {
+      "sha256": "97351f06f15ef0ca533ca4a20efbed1ac4b3e5723c26a929bde4b6cd5202d654",
+      "bytes": 101568,
+      "durationSec": 25.392
+    },
+    "kids_kidneys": {
+      "sha256": "5aa8364af32daaf8ee9c17ae933bc77e7442bf42013280095c11dadf1bef3bc2",
+      "bytes": 99744,
+      "durationSec": 24.936
+    },
+    "kids_liver": {
+      "sha256": "34d8cc913498c2b837acce7547dceef9f153aac1722683dbc9b18ce4c7251137",
+      "bytes": 106848,
+      "durationSec": 26.712
+    },
+    "kids_lungs": {
+      "sha256": "2f061d725458150922e86a121e36d87bda21381123b45d2437b27d0ba9782d4a",
+      "bytes": 100800,
+      "durationSec": 25.2
+    },
+    "kids_male-reproductive": {
+      "sha256": "cbbfb1d4d16fbbb0df79911543a85fbd121fa07fd4e3c368dbf1c00156c6d6a7",
+      "bytes": 107616,
+      "durationSec": 26.904
+    },
+    "kids_mammary-glands": {
+      "sha256": "a7f2c6763a94849a8378e75c9a366fd8fee1e215d145be19b18e3cf9bf91e926",
+      "bytes": 92064,
+      "durationSec": 23.016
+    },
+    "kids_pectoralis-deltoid": {
+      "sha256": "ede161ada916f2bd3aa82017902f5dda6030dce99a1b1bb178b1e245c80f2691",
+      "bytes": 109536,
+      "durationSec": 27.384
+    },
+    "kids_pelvis": {
+      "sha256": "67c0e51863d3563321a8367dc00f2cbab30014639808c3d1a5527c187f8bb18a",
+      "bytes": 114240,
+      "durationSec": 28.56
+    },
+    "kids_quadriceps-gastrocnemius": {
+      "sha256": "c7b1d06bbb35c5a7d0ec3f9f036c5eb201d71b01db832a8f78b02bf65cc433bf",
+      "bytes": 109536,
+      "durationSec": 27.384
+    },
+    "kids_rectus-abdominis-diaphragm": {
+      "sha256": "3f56e26d881b275879e31e77e1409ec3d54d84f6f0531a44d5f1cc0c47eff636",
+      "bytes": 116352,
+      "durationSec": 29.088
+    },
+    "kids_rib-cage": {
+      "sha256": "66746757c1082b0145b1922dd334234eeeb4ca543a6d0c27f7db2735a019cd21",
+      "bytes": 104448,
+      "durationSec": 26.112
+    },
+    "kids_skull": {
+      "sha256": "ac8a96ca2ec7320018ea37274f2e7181a880f10f0f2b1801c115c14b8e46febc",
+      "bytes": 96288,
+      "durationSec": 24.072
+    },
+    "kids_spinal-cord-sciatic": {
+      "sha256": "91e88eff37126bff665bf9dc464a2d5d2e531f3fef3e1f23d52029c918014e7e",
+      "bytes": 122688,
+      "durationSec": 30.672
+    },
+    "kids_spine": {
+      "sha256": "ca84aee17df83cff2525ac56e483654315e4c5522254a9f70d8b1e7efffce52d",
+      "bytes": 119040,
+      "durationSec": 29.76
+    },
+    "kids_stomach": {
+      "sha256": "c8f4f99fe16df8a6f4bf1eb0b28a823716ee5c02039f6749ef4491988c8d6732",
+      "bytes": 86784,
+      "durationSec": 21.696
+    },
+    "kids_tissue_airway": {
+      "sha256": "7365fc7af07542f87c6b793c918603d0ea4b969fedd1be0bcf58234ce8eedc20",
+      "bytes": 26112,
+      "durationSec": 6.528
+    },
+    "kids_tissue_artery": {
+      "sha256": "02cf9eff6cdb97a7c43c2c2d84fe67ea2373141edeca9f4e461e9b3b528dbb44",
+      "bytes": 31104,
+      "durationSec": 7.776
+    },
+    "kids_tissue_arteryDeoxy": {
+      "sha256": "8dc4ecfeabfe311611266f43b8a732ac3115c1c42ef1566e0c6761c2169db620",
+      "bytes": 30336,
+      "durationSec": 7.584
+    },
+    "kids_tissue_bladder": {
+      "sha256": "9536eff3b81145943dc172bef67330ec28d67fb386200b032a1279a6db032fdb",
+      "bytes": 20832,
+      "durationSec": 5.208
+    },
+    "kids_tissue_bone": {
+      "sha256": "e5d163c1727a83c9b0b1e2db1ca80b0e2812651ad94647913590037f6d2eaa36",
+      "bytes": 37920,
+      "durationSec": 9.48
+    },
+    "kids_tissue_brain": {
+      "sha256": "c37c0d2e05ce61dfef397f071ad1ad1ca7c559e9e58a573364bd2476b83ad3d2",
+      "bytes": 34272,
+      "durationSec": 8.568
+    },
+    "kids_tissue_cartilage": {
+      "sha256": "2230433aa1ccda6c6f9dbad8f7f42faf96b4339c6b8bfb1c1989d3ea6a9d8ef7",
+      "bytes": 38976,
+      "durationSec": 9.744
+    },
+    "kids_tissue_colon": {
+      "sha256": "7ea55670dc7b6b88897ec664a16c77b04e759c2e3c46e3cd13adf485501fae8d",
+      "bytes": 19968,
+      "durationSec": 4.992
+    },
+    "kids_tissue_cord": {
+      "sha256": "4cc5ca15195c2578dbfae11d7ad9a4c9aa6c937e6289951a7a538cf6460c8bdf",
+      "bytes": 30528,
+      "durationSec": 7.632
+    },
+    "kids_tissue_csf": {
+      "sha256": "7c6e2dcd098f4204366294652ffc0294b2719a955bdbf71c0a32b5f20e25737f",
+      "bytes": 23424,
+      "durationSec": 5.856
+    },
+    "kids_tissue_dura": {
+      "sha256": "2c37f84fea9686bee1434274ec9610e0378d01d9cd4284f03757b3b97008a394",
+      "bytes": 19968,
+      "durationSec": 4.992
+    },
+    "kids_tissue_eye": {
+      "sha256": "275e0acd67f0c2901ff1896872254fa37fbcf1e36d0ce59ef0b091993e285aeb",
+      "bytes": 30816,
+      "durationSec": 7.704
+    },
+    "kids_tissue_gallbladder": {
+      "sha256": "89293975d547c35b739f728c1c5d9aeb8f0803f328017da16837ca75218fecbb",
+      "bytes": 21888,
+      "durationSec": 5.472
+    },
+    "kids_tissue_gland": {
+      "sha256": "1ee40ee8b8e60801a1a4a3f81695c86e38ae9f12fbf757ecf731a23d6d9edd18",
+      "bytes": 21888,
+      "durationSec": 5.472
+    },
+    "kids_tissue_hair": {
+      "sha256": "73cd2a068fcc5590944f8543f0163ff8ec1a127c4a7c3f0a592a0cbaaf74e487",
+      "bytes": 35616,
+      "durationSec": 8.904
+    },
+    "kids_tissue_heart": {
+      "sha256": "6a798c031e5161b5fd6faa72b48556439d3848e9c80bc4338c000a54e061fb2e",
+      "bytes": 27936,
+      "durationSec": 6.984
+    },
+    "kids_tissue_intestine": {
+      "sha256": "5f8267034066a6d509467365ef2670e30b3699a60c32218dbd0b47f2f8e92fc2",
+      "bytes": 23136,
+      "durationSec": 5.784
+    },
+    "kids_tissue_kidney": {
+      "sha256": "a776d8ce4c6246a92d30ec29ecdf2bd293495b1ee0123a7cc680e4c55b54f09b",
+      "bytes": 22944,
+      "durationSec": 5.736
+    },
+    "kids_tissue_ligament": {
+      "sha256": "10e3fc50cb3a050356f65d6b1f9ea960446a4db8e2973690b9854e544a254638",
+      "bytes": 23136,
+      "durationSec": 5.784
+    },
+    "kids_tissue_lip": {
+      "sha256": "91c59d3f29a24a42505e14aeebeb282e35f858e3be634defabf61d387ad9f546",
+      "bytes": 32640,
+      "durationSec": 8.16
+    },
+    "kids_tissue_liver": {
+      "sha256": "765af8572c7e02083a22784bf90ddd1b3cd24265ea51e3871cd93589a4df07ae",
+      "bytes": 29472,
+      "durationSec": 7.368
+    },
+    "kids_tissue_lung": {
+      "sha256": "d8db912f8c7a62d609448afb2374474cd41b95b6dfd6fbe0fe51d08c57954508",
+      "bytes": 24192,
+      "durationSec": 6.048
+    },
+    "kids_tissue_mesentery": {
+      "sha256": "454f4a938bc2c6db83b31eed9b99c77fc778ae5d301ff7d8d3ca65c800097dc1",
+      "bytes": 22656,
+      "durationSec": 5.664
+    },
+    "kids_tissue_muscle": {
+      "sha256": "54807bf93787ae45bd6cac3e3c6ab5fe18c2cbf5223ce76a2bf13b6eecf81afc",
+      "bytes": 33504,
+      "durationSec": 8.376
+    },
+    "kids_tissue_nerve": {
+      "sha256": "d8a038b15c2d465f1eeeebd13969cae8d526b88415538503c48bfe198b3081e8",
+      "bytes": 28224,
+      "durationSec": 7.056
+    },
+    "kids_tissue_organ": {
+      "sha256": "5ebd8230aa0b0e9ebdf5d09a7860ce548ff74c1be0c06e7123bc07bd681f6bba",
+      "bytes": 24768,
+      "durationSec": 6.192
+    },
+    "kids_tissue_pancreas": {
+      "sha256": "6a505c93fb0fc810b35744ecfdd31731df30545ecc53cba458b274656c52f5dc",
+      "bytes": 24768,
+      "durationSec": 6.192
+    },
+    "kids_tissue_pupil": {
+      "sha256": "f6a613acf3c7f934c63089b80130fb386bd863d770f7b8ff0e0875c5ce63004b",
+      "bytes": 23424,
+      "durationSec": 5.856
+    },
+    "kids_tissue_reproductive": {
+      "sha256": "474275fc09d58ccab713e798e525cb23d4a7dd53522f0acac41d304e2d7c55a1",
+      "bytes": 28224,
+      "durationSec": 7.056
+    },
+    "kids_tissue_skin": {
+      "sha256": "9ca683f429e0e75484b9771b664d8700b9d57d7ec0a3cb0cc463573137b62c96",
+      "bytes": 46944,
+      "durationSec": 11.736
+    },
+    "kids_tissue_spleen": {
+      "sha256": "cdaa8be476e857afbbfd8f306c3a1606a345d5bc492f0c1f0b48fd859fa020b7",
+      "bytes": 19200,
+      "durationSec": 4.8
+    },
+    "kids_tissue_stomach": {
+      "sha256": "7b795f45fd18ef46fee594385173fd558e23082617989ced2da458e16207d215",
+      "bytes": 20832,
+      "durationSec": 5.208
+    },
+    "kids_tissue_tendon": {
+      "sha256": "eb3cacb320e92cf0b0dd2cf978b230e4d25b4837c972a66e410cf31b6d0ad4e1",
+      "bytes": 34272,
+      "durationSec": 8.568
+    },
+    "kids_tissue_tongue": {
+      "sha256": "39da44b0684a096c1283b74ff1ef422f0600285f912611a3464772942e064e08",
+      "bytes": 25248,
+      "durationSec": 6.312
+    },
+    "kids_tissue_tooth": {
+      "sha256": "0f8ee8ad910cf3e0f62a927d3a442bfc1fa89a847bc0af32889adc15985c053a",
+      "bytes": 20832,
+      "durationSec": 5.208
+    },
+    "kids_tissue_vein": {
+      "sha256": "1b5904d6ffc3d9a4ab953b108cca29e93adad180e06d0a381d92e45ae93e97a2",
+      "bytes": 28992,
+      "durationSec": 7.248
+    },
+    "kids_tissue_veinOxy": {
+      "sha256": "c00585636d491b17135b2f20a64d92d37a10cd89e49496aa3d44a5ae59b8e0c8",
+      "bytes": 26112,
+      "durationSec": 6.528
+    },
+    "kids_vena-cava": {
+      "sha256": "34db7c82bd92e117dd0fc0f61f6c9645fcf2279d305e84b7e2addd86e8fb2738",
+      "bytes": 113952,
+      "durationSec": 28.488
+    },
+    "pro_aorta": {
+      "sha256": "91fc8ab647b7d06782fab80923a2a0ebb2cf4b23b6b2ceddb48597b02262103b",
+      "bytes": 149376,
+      "durationSec": 37.344
+    },
+    "pro_biceps-triceps": {
+      "sha256": "22b39fac8109ccb7c4ee6d6866c8ca39cb2399409c456802ecf3f4e20f91ebcb",
+      "bytes": 136416,
+      "durationSec": 34.104
+    },
+    "pro_brachial-radial-vessels": {
+      "sha256": "8c0b818e5a72f0356798907d6fd0581498db2c1ae73d9ed5feb2c2e9f0edc98e",
+      "bytes": 134880,
+      "durationSec": 33.72
+    },
+    "pro_brain": {
+      "sha256": "4e771b93bd0cc11fb174d0bd30b1888876e30407c0d504c633c12eb9d3d68bcd",
+      "bytes": 165984,
+      "durationSec": 41.496
+    },
+    "pro_carotid-jugular": {
+      "sha256": "49683b8465127bce261efef77cf3ed7175a1686f2d4c6c7bea94e3eee7f438bd",
+      "bytes": 108672,
+      "durationSec": 27.168
+    },
+    "pro_female-reproductive": {
+      "sha256": "e2ddde8dacd94318b4cc6337ab217d59a841dcf8185a654853b4acfb357e6af9",
+      "bytes": 164448,
+      "durationSec": 41.112
+    },
+    "pro_femoral-saphenous-vessels": {
+      "sha256": "f8914d2575aea802496ffb1933493a60f3feeee46d72ee1df799852e58a0e8b7",
+      "bytes": 141216,
+      "durationSec": 35.304
+    },
+    "pro_femur-tibia-fibula": {
+      "sha256": "e5272965e54a06c8878aab4c75a0bf0941e3fb725bff099443d3bb8796b61437",
+      "bytes": 167808,
+      "durationSec": 41.952
+    },
+    "pro_heart": {
+      "sha256": "e4e6e14aa7a3f0ba3975ec7b409bac9cf0f9b16b521b26d9cd403c1a17f3875d",
+      "bytes": 151488,
+      "durationSec": 37.872
+    },
+    "pro_humerus-radius-ulna": {
+      "sha256": "779430972305434be779778a60ac3b1b4bcc75535dd29ee74f1d042fd630c4e2",
+      "bytes": 135936,
+      "durationSec": 33.984
+    },
+    "pro_integumentary-skin": {
+      "sha256": "8b7492fce397c32c6ddf6f7cc379bd27a989a6c4445f07ce12039e7c84b199ff",
+      "bytes": 110784,
+      "durationSec": 27.696
+    },
+    "pro_intestines": {
+      "sha256": "50c95d89275f7955a708b7bfa5afd3ce060784d9d4b15fbb416157c12b61e340",
+      "bytes": 155424,
+      "durationSec": 38.856
+    },
+    "pro_kidneys": {
+      "sha256": "8a20813e99772752aa5595a1667f513bf1fc12c1bb1fc1e2e7aff178d25923e6",
+      "bytes": 156192,
+      "durationSec": 39.048
+    },
+    "pro_liver": {
+      "sha256": "f64b81f162930d741e02dfb539afe9b500aec9a9faef41ae595ddcf4cfe62510",
+      "bytes": 121632,
+      "durationSec": 30.408
+    },
+    "pro_lungs": {
+      "sha256": "161bd9434502d9c52066a4b134000218c9f7a689d800d363093c6987c80ae918",
+      "bytes": 130656,
+      "durationSec": 32.664
+    },
+    "pro_male-reproductive": {
+      "sha256": "b43248ffc38657b7495684c1cd449cad8f934f2953484bbbab5653123c231fe2",
+      "bytes": 142464,
+      "durationSec": 35.616
+    },
+    "pro_mammary-glands": {
+      "sha256": "8127eeaea3b9b8a3d026ab8d15c71c317af3104c1d23ac9adf6bf2ea33cc9c61",
+      "bytes": 109536,
+      "durationSec": 27.384
+    },
+    "pro_pectoralis-deltoid": {
+      "sha256": "f0b4a1f287621b78e1d5103b241136ec9072fd039901b820ea00b8bfc68c8c4b",
+      "bytes": 148800,
+      "durationSec": 37.2
+    },
+    "pro_pelvis": {
+      "sha256": "9881dff7ec813ce2656d7e7c217b11fdb8326e3d3de3d92add65e31415a9c18d",
+      "bytes": 132192,
+      "durationSec": 33.048
+    },
+    "pro_quadriceps-gastrocnemius": {
+      "sha256": "3f08080fe9ba92f5cf3697af799af51d12269b7eb978fef6e9e30b33096f77ca",
+      "bytes": 170784,
+      "durationSec": 42.696
+    },
+    "pro_rectus-abdominis-diaphragm": {
+      "sha256": "5bb5c0a43d018731ef4c2211443fb92bf3aeb767f2264ea518264306c36d6653",
+      "bytes": 135360,
+      "durationSec": 33.84
+    },
+    "pro_rib-cage": {
+      "sha256": "9c0cace4a07824dd9f2972023b6c76a4b013a05520fbecf54582dc5b36387a8a",
+      "bytes": 144576,
+      "durationSec": 36.144
+    },
+    "pro_skull": {
+      "sha256": "fecd809194518e08bb74450a7bfb1bb19b277288a274a485ad7c2d42293251dc",
+      "bytes": 149856,
+      "durationSec": 37.464
+    },
+    "pro_spinal-cord-sciatic": {
+      "sha256": "22d8fb87e51b01acce35f962939746cf27c549a7c9ffb2ba75ecb5a39ed49b68",
+      "bytes": 155424,
+      "durationSec": 38.856
+    },
+    "pro_spine": {
+      "sha256": "6d975490ff6a91e09cf4fb88684e059780cb100eb6889b20686a5979d6009922",
+      "bytes": 177600,
+      "durationSec": 44.4
+    },
+    "pro_stomach": {
+      "sha256": "d8b2ee583cc2bff7f668ff0c07fcae1078e65812745ce1471545ff63b358bb1f",
+      "bytes": 148032,
+      "durationSec": 37.008
+    },
+    "pro_tissue_airway": {
+      "sha256": "b96b0b479f175da59abbc3f9c0e9bc8420607562f4bcb37486ccdf83201ab138",
+      "bytes": 35616,
+      "durationSec": 8.904
+    },
+    "pro_tissue_artery": {
+      "sha256": "39549b055d16a150b4fdc8ff26f2bb737a17180cdd7d4f6de2e02517fa6d2d8b",
+      "bytes": 32160,
+      "durationSec": 8.04
+    },
+    "pro_tissue_arteryDeoxy": {
+      "sha256": "a4caa2ef18854af116aa7a2177306f2be80903fb9c71cf78bd517f408982911f",
+      "bytes": 31872,
+      "durationSec": 7.968
+    },
+    "pro_tissue_bladder": {
+      "sha256": "5bece58f75b62db763c59ffe2c2f205fcec6264c46620f55dad1138f1ad6af16",
+      "bytes": 31872,
+      "durationSec": 7.968
+    },
+    "pro_tissue_bone": {
+      "sha256": "9eed85952b015e3e1d42a3817e11c96b331ec600ec5c5fe1492d6710eadcc687",
+      "bytes": 37152,
+      "durationSec": 9.288
+    },
+    "pro_tissue_brain": {
+      "sha256": "208eb65144a7ed58f882f64d1f687ebe37035809605d7a4dba23882fa51a4c3d",
+      "bytes": 30816,
+      "durationSec": 7.704
+    },
+    "pro_tissue_cartilage": {
+      "sha256": "34a8db5c0a2d1ab7d1db613396a027f21364c2b503f9aaa264e5b2f9de8de529",
+      "bytes": 31584,
+      "durationSec": 7.896
+    },
+    "pro_tissue_colon": {
+      "sha256": "f227fd8bb4eb72dc49c41f459766450e6d2fb49a0e1f39c6bd98278da6bf3ce9",
+      "bytes": 28992,
+      "durationSec": 7.248
+    },
+    "pro_tissue_cord": {
+      "sha256": "ac00de10631e64c4456699c59c82cf2abb4abbc81783bb996d5ec9d5bf2d294d",
+      "bytes": 37920,
+      "durationSec": 9.48
+    },
+    "pro_tissue_csf": {
+      "sha256": "7a30f7204c156c485d8384841fd05e9f7cc64e1e3d9b75c3c35084e58c112640",
+      "bytes": 31584,
+      "durationSec": 7.896
+    },
+    "pro_tissue_dura": {
+      "sha256": "707c709c5a7e5d12100cdbef133d30abe9690a013f5508cd8c31f90a2f6493b8",
+      "bytes": 27936,
+      "durationSec": 6.984
+    },
+    "pro_tissue_eye": {
+      "sha256": "39fb0dd6f48bf61816b20302d4ebe4f89018cd9a45a476123b6997a6da0f004d",
+      "bytes": 33504,
+      "durationSec": 8.376
+    },
+    "pro_tissue_gallbladder": {
+      "sha256": "8f0c0ecc7067bd06c578514ef39211182b0b1908e27549300dc3569d1730fbe5",
+      "bytes": 27936,
+      "durationSec": 6.984
+    },
+    "pro_tissue_gland": {
+      "sha256": "4de928f6118a2d769b4c768b01a43cf36a23d3fc1ac3fa11df15fcb986345124",
+      "bytes": 30816,
+      "durationSec": 7.704
+    },
+    "pro_tissue_hair": {
+      "sha256": "835f012d344ea9033fb44bb24df9c65e336a4a0156a2b8499cf48518449c25a3",
+      "bytes": 33984,
+      "durationSec": 8.496
+    },
+    "pro_tissue_heart": {
+      "sha256": "3e23cdc0a85724d2693ac01543be9eea2cb69b1616df93c01bace94745df2990",
+      "bytes": 33216,
+      "durationSec": 8.304
+    },
+    "pro_tissue_intestine": {
+      "sha256": "cd2dc6fb49ae6df14ed601df16bfd7cc1b568ff9918f3c74743c293a4aa80e27",
+      "bytes": 37440,
+      "durationSec": 9.36
+    },
+    "pro_tissue_kidney": {
+      "sha256": "be04b55ff7bc76e0a586704e7337197c05d26d5a4d7997d705550fec0f65d008",
+      "bytes": 47712,
+      "durationSec": 11.928
+    },
+    "pro_tissue_ligament": {
+      "sha256": "14464c82861d927985c97929040250d0fc6a4533ecc26032b9790cc147f601f0",
+      "bytes": 30528,
+      "durationSec": 7.632
+    },
+    "pro_tissue_lip": {
+      "sha256": "72a747cc5d53a0e611dde12d2f716745168825d75857b1bc42894bfb62f6c2ff",
+      "bytes": 29472,
+      "durationSec": 7.368
+    },
+    "pro_tissue_liver": {
+      "sha256": "f328122179b39dd19fc581f1aa59ff8cd63a7e10f2c862da02ae27e1cc55fd64",
+      "bytes": 44256,
+      "durationSec": 11.064
+    },
+    "pro_tissue_lung": {
+      "sha256": "f5dc786cbcca28fd415977fbe8ea74355a9d9994c89000822e7716f6fb5afd20",
+      "bytes": 39552,
+      "durationSec": 9.888
+    },
+    "pro_tissue_mesentery": {
+      "sha256": "53fff1b90f5fd86b54473dceffbe4d9a8724fef2bcff54e5b6381f8f466b032e",
+      "bytes": 29280,
+      "durationSec": 7.32
+    },
+    "pro_tissue_muscle": {
+      "sha256": "d0e9a45af461fda1b4b4075515d3d11cff02ba4af5e26a12d94a717cf1ca3cda",
+      "bytes": 30816,
+      "durationSec": 7.704
+    },
+    "pro_tissue_nerve": {
+      "sha256": "6de4ba64457ebe0c834c537e3b17b83611f89121137a54054dcc86c3eb7d8de7",
+      "bytes": 34560,
+      "durationSec": 8.64
+    },
+    "pro_tissue_organ": {
+      "sha256": "8f61715eda496fc6ea62e569625d822af1da60f9b453d983d3b96c2bcdb212b8",
+      "bytes": 16320,
+      "durationSec": 4.08
+    },
+    "pro_tissue_pancreas": {
+      "sha256": "227141b64cbcc261457cc136617d6824c909a290d11e33cc3025c4017cfa91a8",
+      "bytes": 35808,
+      "durationSec": 8.952
+    },
+    "pro_tissue_pupil": {
+      "sha256": "926bd6c07e26618cb17dd2c7ff18085fe10e376a7e29d29083dac538453cc9f8",
+      "bytes": 30336,
+      "durationSec": 7.584
+    },
+    "pro_tissue_reproductive": {
+      "sha256": "e8821f2e55cbfb67ed88c3eed000ad3e161b3921415b6b08d83611b528449d2d",
+      "bytes": 29760,
+      "durationSec": 7.44
+    },
+    "pro_tissue_skin": {
+      "sha256": "45fc0065afba87e98edfea81ad3165ebb26ee5e90299c3672723bc7d23f90f6f",
+      "bytes": 37152,
+      "durationSec": 9.288
+    },
+    "pro_tissue_spleen": {
+      "sha256": "81cb719c78bf5ac78f9f17053cc19dce927507309c2647f26494fbae0d8a811d",
+      "bytes": 31872,
+      "durationSec": 7.968
+    },
+    "pro_tissue_stomach": {
+      "sha256": "bdc1f02a949bb8af51ff8205f66891d7d8422f519a91b6f21af1eb94558810c6",
+      "bytes": 28704,
+      "durationSec": 7.176
+    },
+    "pro_tissue_tendon": {
+      "sha256": "67e090fc27db02a44b6adce01fa7a8fd6a56625e681d5e5906482eb316262670",
+      "bytes": 27360,
+      "durationSec": 6.84
+    },
+    "pro_tissue_tongue": {
+      "sha256": "08fdcbf33afb30ca70f37f15d38d028a0f190710f8b9c8e9e0711c168a77cfd5",
+      "bytes": 41952,
+      "durationSec": 10.488
+    },
+    "pro_tissue_tooth": {
+      "sha256": "c656872511d8b11777f256ae588e726cc85c28ba65e934834aaa78d818d95789",
+      "bytes": 35616,
+      "durationSec": 8.904
+    },
+    "pro_tissue_vein": {
+      "sha256": "1cd78afa3459d4e010b1b4ea119a7357dbed9e0b549bb53fa50e9e61830fe4e9",
+      "bytes": 30528,
+      "durationSec": 7.632
+    },
+    "pro_tissue_veinOxy": {
+      "sha256": "9137b625b7a3288d4099acad98aabbe6d8715a491c075a479d35d81a8bf02440",
+      "bytes": 23424,
+      "durationSec": 5.856
+    },
+    "pro_vena-cava": {
+      "sha256": "310f6139634d0bfe1e0565988e9a2d83df4ce1100d4caf027f70acf6e42ab0de",
+      "bytes": 130080,
+      "durationSec": 32.52
+    }
+  }
+}

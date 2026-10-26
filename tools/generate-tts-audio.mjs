@@ -32,7 +32,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const AUDIO_ROOT = path.join(ROOT, 'assets', 'audio');
 const BILLING_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || 'project-maui';
-const CONCURRENCY = Math.min(4, Math.max(1, Number(process.env.TTS_CONCURRENCY || 4)));
+const CONCURRENCY = Math.min(12, Math.max(1, Number(process.env.TTS_CONCURRENCY || 8)));
 
 let cachedToken = null;
 let cachedTokenTime = 0;
@@ -59,10 +59,10 @@ function getAccessToken(forceRefresh = false) {
   return cachedToken;
 }
 
-export function computeClipHash(voiceName, cleanedText) {
+export function computeClipHash(voiceName, studioText) {
   return crypto
     .createHash('sha256')
-    .update(`${voiceName}\n${cleanedText}`, 'utf8')
+    .update(`${voiceName}\n${studioText}`, 'utf8')
     .digest('hex');
 }
 
@@ -114,6 +114,25 @@ async function synthesizeChunkMp3(textChunk, lang, maxRetries = 6) {
       if (!res.ok) {
         const errText = await res.text();
         const status = res.status;
+        if (status === 400 && errText.includes('sentences that are too long') && textChunk.length > 20) {
+          const isCjk = lang === 'zh' || lang === 'yue' || lang === 'ja';
+          const parts = textChunk
+            .split(/(?<=[。！？!?，、,;；:：])\s*/u)
+            .map((p) => p.replace(/[，、,;；:：\s]+$/u, '').trim())
+            .filter(Boolean)
+            .map((p) => (/[。！？.!?]$/u.test(p) ? p : `${p}${isCjk ? '。' : '.'}`));
+          if (parts.length > 1) {
+            const subBufs = [];
+            for (const p of parts) {
+              subBufs.push(await synthesizeChunkMp3(p, lang, maxRetries));
+            }
+            return Buffer.concat(subBufs);
+          }
+          const mid = Math.floor(textChunk.length / 2);
+          const b1 = await synthesizeChunkMp3(`${textChunk.slice(0, mid)}${isCjk ? '。' : '.'}`, lang, maxRetries);
+          const b2 = await synthesizeChunkMp3(textChunk.slice(mid), lang, maxRetries);
+          return Buffer.concat([b1, b2]);
+        }
         if (status === 429 || status >= 500 || status === 401) {
           const delayMs = Math.min(15000, 750 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 400));
           if (attempt < maxRetries) {
@@ -137,8 +156,8 @@ async function synthesizeChunkMp3(textChunk, lang, maxRetries = 6) {
   }
 }
 
-async function synthesizeFullClip(cleanedText, lang) {
-  const chunks = splitTextIntoByteChunks(cleanedText, lang, 4500);
+async function synthesizeFullClip(studioText, lang) {
+  const chunks = splitTextIntoByteChunks(studioText, lang, 4500);
   const buffers = [];
   for (const chunk of chunks) {
     const buf = await synthesizeChunkMp3(chunk, lang);
@@ -151,19 +170,35 @@ async function loadManifest(manifestPath) {
   try {
     const raw = await fs.readFile(manifestPath, 'utf8');
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
+    if (!parsed || typeof parsed !== 'object') return {};
+    if (parsed.clips && typeof parsed.clips === 'object') {
+      return parsed.clips;
+    }
+    return parsed;
   } catch (_e) {
     return {};
   }
 }
 
-async function saveManifest(manifestPath, manifestObj) {
+async function saveManifest(manifestPath, manifestObj, lang) {
+  const voice = VOICE_CONFIG[lang] || {};
   const sortedKeys = Object.keys(manifestObj).sort();
-  const ordered = {};
+  const orderedClips = {};
   for (const k of sortedKeys) {
-    ordered[k] = manifestObj[k];
+    orderedClips[k] = manifestObj[k];
   }
-  await fs.writeFile(manifestPath, `${JSON.stringify(ordered, null, 2)}\n`, 'utf8');
+  const payload = {
+    schemaVersion: 2,
+    lang,
+    voice: voice.name || '',
+    languageCode: voice.languageCode || '',
+    audioEncoding: 'MP3',
+    sampleRateHertz: 24000,
+    clipCount: sortedKeys.length,
+    generatedAt: new Date().toISOString(),
+    clips: orderedClips
+  };
+  await fs.writeFile(manifestPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
 function buildLangTasks(lang) {
@@ -174,7 +209,7 @@ function buildLangTasks(lang) {
   for (const rawPart of ANATOMY_PARTS) {
     const localizedPart = getLocalizedPart(rawPart, lang);
     for (const audience of ['kids', 'pro']) {
-      const { key, cleanedText } = buildSelectionNarration({
+      const { key, cleanedText, studioText } = buildSelectionNarration({
         lang,
         audience,
         curatedPart: localizedPart
@@ -183,8 +218,9 @@ function buildLangTasks(lang) {
         lang,
         key,
         cleanedText,
-        chars: cleanedText.length,
-        sha256: computeClipHash(voice.name, cleanedText)
+        studioText,
+        chars: studioText.length,
+        sha256: computeClipHash(voice.name, studioText)
       });
     }
   }
@@ -193,7 +229,7 @@ function buildLangTasks(lang) {
   for (const tissueKey of Object.keys(TISSUE_INFO)) {
     const localizedTissue = getLocalizedTissueInfo(tissueKey, lang);
     for (const audience of ['kids', 'pro']) {
-      const { key, cleanedText } = buildSelectionNarration({
+      const { key, cleanedText, studioText } = buildSelectionNarration({
         lang,
         audience,
         curatedPart: null,
@@ -205,8 +241,9 @@ function buildLangTasks(lang) {
         lang,
         key,
         cleanedText,
-        chars: cleanedText.length,
-        sha256: computeClipHash(voice.name, cleanedText)
+        studioText,
+        chars: studioText.length,
+        sha256: computeClipHash(voice.name, studioText)
       });
     }
   }
@@ -214,16 +251,13 @@ function buildLangTasks(lang) {
   return tasks;
 }
 
-async function isExistingClipReusable(mp3Path, existingEntry, expectedHash) {
-  if (!existingEntry || existingEntry.sha256 !== expectedHash) return false;
+async function checkDiskClip(mp3Path) {
   try {
     const buf = await fs.readFile(mp3Path);
-    if (!isValidMp3Buffer(buf) || buf.length <= 8192) return false;
-    if (existingEntry.bytes !== buf.length) return false;
-    if (!existingEntry.durationSec || existingEntry.durationSec <= 0.5) return false;
-    return true;
+    if (!isValidMp3Buffer(buf) || buf.length <= 4096) return null;
+    return buf;
   } catch (_e) {
-    return false;
+    return null;
   }
 }
 
@@ -260,12 +294,22 @@ async function main() {
         const mp3Path = path.join(langDir, `${task.key}.mp3`);
         const existing = manifest[task.key];
 
-        if (await isExistingClipReusable(mp3Path, existing, task.sha256)) {
-          skipped++;
-          continue;
+        if (process.env.FORCE_REGEN !== '1') {
+          const diskBuf = await checkDiskClip(mp3Path);
+          if (diskBuf) {
+            if (!existing || existing.bytes !== diskBuf.length || !existing.sha256) {
+              manifest[task.key] = {
+                sha256: task.sha256,
+                bytes: diskBuf.length,
+                durationSec: probeDurationSec(mp3Path)
+              };
+            }
+            skipped++;
+            continue;
+          }
         }
 
-        const mp3Buf = await synthesizeFullClip(task.cleanedText, lang);
+        const mp3Buf = await synthesizeFullClip(task.studioText, lang);
         if (!isValidMp3Buffer(mp3Buf)) {
           throw new Error(`Invalid MP3 header returned for ${lang}/${task.key}`);
         }
@@ -281,7 +325,7 @@ async function main() {
         synthesizedChars += task.chars;
 
         if ((generated + skipped) % 16 === 0) {
-          await saveManifest(manifestPath, manifest);
+          await saveManifest(manifestPath, manifest, lang);
           console.log(
             `  [${lang}] ${generated + skipped}/${tasks.length} processed (${generated} synthesized, ${skipped} cached)`
           );
@@ -290,7 +334,7 @@ async function main() {
     }
 
     await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
-    await saveManifest(manifestPath, manifest);
+    await saveManifest(manifestPath, manifest, lang);
     allManifests[lang] = manifest;
     summaryByLang[lang] = {
       totalClips: tasks.length,

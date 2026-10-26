@@ -1,6 +1,6 @@
 /**
  * Internationalization (i18n) hub for the Human Body 3D Atlas.
- * Supports English ('en'), Spanish ('es'), Simplified Chinese ('zh'),
+ * Supports English ('en'), Spanish ('es'), Simplified Chinese ('zh'), Cantonese ('yue'),
  * Japanese ('ja'), Korean ('ko'), Portuguese ('pt'), French ('fr'), and Italian ('it').
  */
 
@@ -8,6 +8,7 @@ import { ANATOMY_PARTS, ANATOMY_QUIZ_QUESTIONS } from './anatomyData.js';
 import { TISSUE_INFO } from './content.js';
 import { PARTS_ES, TISSUE_INFO_ES, QUIZ_QUESTIONS_ES } from './i18nPartsEs.js';
 import { PARTS_ZH, TISSUE_INFO_ZH, QUIZ_QUESTIONS_ZH } from './i18nPartsZh.js';
+import { PARTS_YUE, TISSUE_INFO_YUE, QUIZ_QUESTIONS_YUE } from './i18nPartsYue.js';
 import {
   PARTS_JA,
   TISSUE_INFO_JA,
@@ -23,8 +24,9 @@ import { translateAnatomyName, MULTILINGUAL_SYNONYMS } from './i18nAnatomyTransl
 
 export { translateAnatomyName, MULTILINGUAL_SYNONYMS };
 
-export const SUPPORTED_LANGS = ['en', 'es', 'zh', 'ja', 'ko', 'pt', 'fr', 'it'];
-export const PUBLIC_LANGS = ['en', 'es', 'zh'];
+export const SUPPORTED_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
+export const PUBLIC_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
+export const STUDIO_AUDIO_LANGS = ['en', 'es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
 
 export function isPreviewI18n(searchStr) {
   try {
@@ -54,6 +56,16 @@ export function normalizeLang(raw) {
   if (!raw) return 'en';
   const s = String(raw).toLowerCase().trim();
   if (s.startsWith('es')) return 'es';
+  if (
+    s === 'yue' ||
+    s.startsWith('yue-') ||
+    s.startsWith('zh-hk') ||
+    s.startsWith('zh-mo') ||
+    s.includes('yue') ||
+    s.includes('cantonese')
+  ) {
+    return 'yue';
+  }
   if (s.startsWith('zh') || s.startsWith('cmn')) return 'zh';
   if (s.startsWith('ja') || s.startsWith('jp')) return 'ja';
   if (s.startsWith('ko') || s.startsWith('kr')) return 'ko';
@@ -492,6 +504,149 @@ export const UI_STRINGS = {
     expandInspectorAria: '展开详情面板',
     errorLoadModels: '无法加载 3D 解剖模型，请检查网络连接并刷新页面。',
     errorWebgl: '您的浏览器无法启动 3D 视图（需要 WebGL 2 支持）。'
+  },
+  yue: {
+    pageTitle: '人體 3D 解剖圖譜 — 逼真互動人體解剖',
+    skipLink: '跳去身體部位詳情',
+    canvasAria:
+      '互動 3D 人體模型。拖曳旋轉，滾輪或雙指縮放去指標位置，右鍵拖曳平移，撳任何解剖結構睇名同詳情。方向鍵旋轉，加減號縮放。',
+    canvasAriaTouch:
+      '互動 3D 人體模型。單指拖曳旋轉，雙指捏合縮放，雙指拖曳平移，輕觸任何解剖結構睇名同詳情。',
+    loadingTitle: '正在構建人體 3D 模型…',
+    loadingSubDefault: '正在載入真實解剖結構模型',
+    loadingLayer: (layerName) => `正在載入 ${layerName}…`,
+    loadingProgress: (pct, loadedMb, totalMb) => `${pct}% · ${loadedMb} / ${totalMb} MB`,
+    brandTitle: '人體 3D 解剖圖譜',
+    brandSubtitle: '女性與男性 · 2,225 個命名解剖結構',
+    searchLabel: '搜尋任何身體部位',
+    searchPlaceholder: '搜尋身體部位 — 心臟、股骨、子宮、主動脈、肱二頭肌…',
+    searchResultsAria: '配對嘅身體部位',
+    searchStillLoading: '正在載入解剖模型 — 請稍候…',
+    searchNoMatch: '搵唔到相符項目。試下「心臟」、「股骨」、「子宮」、「主動脈」或者「肱二頭肌」。',
+    structuresCount: (n) => `${n} 個解剖結構`,
+    sexGroupAria: '身體解剖性別',
+    female: '女性',
+    male: '男性',
+    audienceGroupAria: '講解模式',
+    kids: '少兒科普',
+    pro: '臨床醫學',
+    langGroupAria: '語言',
+    danceBtn: '💃 跳舞',
+    danceActiveBtn: '🕺 熱舞中！',
+    danceAria: '令 3D 人體跳起舞嚟',
+    quizBtn: '趣味測驗',
+    viewBarAria: '人體系統視圖',
+    viewPresets: {
+      skin: '皮膚',
+      muscles: '肌肉',
+      skeleton: '骨骼',
+      circulation: '血管與血流',
+      organs: '內臟器官',
+      nervous: '大腦與神經',
+      xray: '透視（全系統）'
+    },
+    layerNames: {
+      skin: '皮膚',
+      muscles: '肌肉',
+      skeleton: '骨骼',
+      vessels: '靜脈與動脈',
+      organs: '內臟器官',
+      nerves: '大腦與神經'
+    },
+    layerLabels: {
+      skin: '皮膚與體表',
+      muscles: '肌肉系統',
+      skeleton: '骨骼系統',
+      vessels: '心血管系統',
+      organs: '內臟器官系統',
+      nerves: '神經系統',
+      default: '解剖結構'
+    },
+    leftPanelAria: '顯示控制',
+    layersTitle: '解剖圖層',
+    layersHint: '調低任何圖層透明度，透視入面深層結構。',
+    heartPanelTitle: '心率與血液流動',
+    heartRateLabel: '心率',
+    bpmUnit: (v) => `${v} 次/分`,
+    legendArteries: '動脈（富氧血）',
+    legendVeins: '靜脈（回流血）',
+    bloodFlowBtn: '血液流動動畫',
+    displayPanelTitle: '顯示設定',
+    labelsBtn: '結構標籤',
+    isolateBtn: '單獨顯示選中項',
+    autoRotateBtn: '自動旋轉',
+    resetViewBtn: '重設視角',
+    qualityLabel: '渲染畫質',
+    qualityHigh: '高畫質（柔和陰影 + 環境光遮蔽）',
+    qualityBalanced: '均衡模式',
+    qualityFast: '流暢模式（適合舊裝置）',
+    skinToneLabel: '膚色',
+    skinToneSwatchAria: (name) => {
+      const m = { light: '淺', medium: '中等', tan: '小麥', brown: '棕褐', deep: '深' };
+      return `${m[name] || name}膚色`;
+    },
+    inspectorAria: '揀選嘅身體部位',
+    emptyTitle: '探索人體奧秘',
+    emptyDesc: '將滑鼠放喺模型上面可以睇名。撳任何結構（或者喺上面搜尋）就可以聚焦放大同埋深入了解。',
+    emptyDescTouch: '輕觸 3D 模型上面嘅任何結構（或者喺上面搜尋），就可以聚焦放大同埋深入了解。',
+    tips: [
+      { bold: '拖曳', rest: ' 旋轉視角 · ', bold2: '滾輪', rest2: ' 向指標位置縮放' },
+      { bold: '右鍵拖曳', rest: '（或雙指滑動）平移視圖' },
+      { rest: '喺上面切換系統視圖：皮膚、肌肉、骨骼、血管、器官、神經' }
+    ],
+    tipsTouch: [
+      { bold: '單指拖曳', rest: ' 旋轉視角 · ', bold2: '雙指捏合', rest2: ' 縮放' },
+      { bold: '雙指拖曳', rest: ' 平移視圖 · ', bold2: '輕觸', rest2: ' 任何部位睇詳情' },
+      { rest: '喺上面切換系統視圖：皮膚、肌肉、骨骼、血管、器官、神經' }
+    ],
+    readAloudBtn: '🔊 粵語朗讀',
+    readAloudAria: '粵語語音朗讀',
+    stopSpeakBtn: '⏹️ 停止',
+    stopSpeakAria: '停止朗讀',
+    zoomPartBtn: '聚焦放大',
+    isolatePartBtn: '只顯示呢個結構',
+    showAllBtn: '顯示全部結構',
+    clearBtn: '清除選擇',
+    sayIt: (pron) => `發音提示：「${pron}」`,
+    sideLabel: (side) => `${side === 'left' ? '左側' : side === 'right' ? '右側' : side}`,
+    partOfChip: (name) => `屬於：${name} — 睇整體`,
+    belongsTo: '所屬解剖分組',
+    structuresInSelection: '目前揀選包含嘅結構',
+    moreChip: (n) => `另外 ${n} 個結構`,
+    whyYouNeedIt: '點解身體需要佢',
+    fastFacts: '核心檔案',
+    funFacts: '趣味冷知識',
+    arterialSupply: '動脈供血',
+    venousDrainage: '靜脈回流',
+    innervation: '神經支配',
+    attachmentsRelations: '起止點與毗鄰關係',
+    referenceValues: '臨床參考指標',
+    clinicalCorrelation: '臨床相關性與要點',
+    sourceModel: (fj, fma) => `模型來源：BodyParts3D 構件 ${fj} · FMA 概念 ${fma || 'n/a'}`,
+    sourceRecon: (fma) => `模型來源：基於 BodyParts3D 解剖邊界重建表面 · FMA 概念 ${fma || 'n/a'}`,
+    sourceVhf: (fma) => `模型來源：NIH HuBMAP 可視女性人類參考圖譜 (CC BY 4.0) · FMA 概念 ${fma || 'n/a'}`,
+    zoomOutAria: '縮小',
+    zoomInAria: '放大',
+    zoomLabel: '縮放',
+    footerAttribution: '3D 解剖模型：BodyParts3D © DBCLS 與 NIH HuBMAP 人類參考圖譜 (Visible Human Female)，CC BY 4.0',
+    quizTitle: '解剖知識小測驗',
+    quizCloseBtn: '關閉',
+    quizCloseAria: '關閉測驗',
+    quizStep: (curr, total, score) => `第 ${curr} / ${total} 題 · 得分 ${score}`,
+    quizNextBtn: '下一題',
+    quizSeeScoreBtn: '睇成績',
+    quizScoreTitle: (score, total) => `你答啱咗 ${score} / ${total} 題！`,
+    quizPerfectLead: '滿分！你真係人體解剖學達人！',
+    quizGoodLead: '探索得好叻！可以再挑戰一次，或者繼續探索人體模型。',
+    quizPlayAgainBtn: '再玩一次',
+    mobileLayersBtn: '⚙️ 圖層',
+    mobileLayersAria: '打開圖層與控制面板',
+    mobileDrawerTitle: '圖層與控制',
+    closeControlsAria: '關閉控制面板',
+    minimizeInspectorAria: '收起詳情面板',
+    expandInspectorAria: '展開詳情面板',
+    errorLoadModels: '無法載入 3D 解剖模型，請檢查網絡連線並重新整理頁面。',
+    errorWebgl: '你嘅瀏覽器無法啟動 3D 視圖（需要 WebGL 2 支援）。'
   },
   ja: {
     pageTitle: '人体 3D アトラス — リアルなインタラクティブ解剖学',
@@ -1222,6 +1377,7 @@ export function getLocalizedLayerLabel(layer, lang = 'en') {
 const PARTS_BY_LANG = {
   es: PARTS_ES,
   zh: PARTS_ZH,
+  yue: PARTS_YUE,
   ja: PARTS_JA,
   ko: PARTS_KO,
   pt: PARTS_PT,
@@ -1232,6 +1388,7 @@ const PARTS_BY_LANG = {
 const TISSUE_BY_LANG = {
   es: TISSUE_INFO_ES,
   zh: TISSUE_INFO_ZH,
+  yue: TISSUE_INFO_YUE,
   ja: TISSUE_INFO_JA,
   ko: TISSUE_INFO_KO,
   pt: TISSUE_INFO_PT,
@@ -1242,6 +1399,7 @@ const TISSUE_BY_LANG = {
 const QUIZ_BY_LANG = {
   es: QUIZ_QUESTIONS_ES,
   zh: QUIZ_QUESTIONS_ZH,
+  yue: QUIZ_QUESTIONS_YUE,
   ja: QUIZ_QUESTIONS_JA,
   ko: QUIZ_QUESTIONS_KO,
   pt: QUIZ_QUESTIONS_PT,

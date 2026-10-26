@@ -24,6 +24,7 @@ import {
 import {
   SUPPORTED_LANGS,
   PUBLIC_LANGS,
+  STUDIO_AUDIO_LANGS,
   normalizeLang,
   getAvailableLanguages,
   gateLang,
@@ -41,6 +42,7 @@ const BCP_47_BY_LANG = {
   en: 'en-US',
   es: 'es-ES',
   zh: 'zh-CN',
+  yue: 'yue-HK',
   ja: 'ja-JP',
   ko: 'ko-KR',
   pt: 'pt-BR',
@@ -367,7 +369,8 @@ class AtlasApp {
       btn.classList.toggle('is-active', active);
       btn.setAttribute('aria-pressed', String(active));
     }
-    document.documentElement.lang = this.lang === 'zh' ? 'zh-CN' : this.lang;
+    document.documentElement.lang =
+      this.lang === 'zh' ? 'zh-CN' : this.lang === 'yue' ? 'zh-HK' : this.lang;
   }
 
   _applyUiStrings() {
@@ -1268,7 +1271,7 @@ class AtlasApp {
     this._syncSpeakButton();
 
     // Pre-rendered Chirp3-HD Studio MP3s exist for en, es, zh; other languages use Neural Browser TTS directly
-    const hasStudioAudio = PUBLIC_LANGS.includes(this.lang);
+    const hasStudioAudio = STUDIO_AUDIO_LANGS.includes(this.lang);
     if (!hasStudioAudio) {
       this._speakWithBrowserTTS(narration.cleanedText);
       return;
@@ -1357,8 +1360,9 @@ class AtlasApp {
     const s = String(text || '').trim();
     if (!s) return [];
     if (s.length <= maxChars) return [s];
-    const sep = lang === 'zh' || lang === 'ja' ? /(?<=[。！？!?])\s*/u : /(?<=[.!?。！？])\s+/u;
-    const joiner = lang === 'zh' || lang === 'ja' ? '' : ' ';
+    const isCjk = lang === 'zh' || lang === 'yue' || lang === 'ja';
+    const sep = isCjk ? /(?<=[。！？!?])\s*/u : /(?<=[.!?。！？])\s+/u;
+    const joiner = isCjk ? '' : ' ';
     const sentences = s.split(sep).filter(Boolean);
     const out = [];
     let cur = '';
@@ -1396,7 +1400,28 @@ class AtlasApp {
     const targetPrefix = normalizeLang(lang);
     const matching = voices.filter((v) => {
       const vl = String(v.lang || '').toLowerCase();
-      if (targetPrefix === 'zh') return vl.startsWith('zh') || vl.startsWith('cmn');
+      const vn = String(v.name || '').toLowerCase();
+      if (targetPrefix === 'yue') {
+        return (
+          vl.startsWith('yue') ||
+          vl.startsWith('zh-hk') ||
+          vl.startsWith('zh_hk') ||
+          vl.startsWith('zh-mo') ||
+          vn.includes('cantonese') ||
+          vn.includes('hong kong') ||
+          vn.includes('sin-ji') ||
+          vn.includes('sinji') ||
+          vn.includes('hiumaan') ||
+          vn.includes('hiugaai') ||
+          vn.includes('wanlung')
+        );
+      }
+      if (targetPrefix === 'zh') {
+        return (
+          (vl.startsWith('zh') && !vl.startsWith('zh-hk') && !vl.startsWith('zh-mo')) ||
+          vl.startsWith('cmn')
+        );
+      }
       return vl.startsWith(targetPrefix);
     });
     if (!matching.length) return null;
@@ -1404,7 +1429,7 @@ class AtlasApp {
     const noveltyPattern =
       /albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|hysterical|pipe organ|trinoids|whisper|zarvox|fred|junior|ralph|espeak/i;
     const preferredNames =
-      /ava|samantha|allison|victoria|karen|daniel|serena|paulina|mónica|monica|jorge|tingting|ting-ting|meijia|sinji|xiaoxiao|yunxi|kyoko|otoya|nanami|yuna|sunhi|luciana|joana|francisca|thomas|amelie|amélie|audrey|henri|denise|alice|luca|elsa|diego/i;
+      /ava|samantha|allison|victoria|karen|daniel|serena|paulina|mónica|monica|jorge|tingting|ting-ting|meijia|sin-ji|sinji|hiumaan|hiugaai|wanlung|xiaoxiao|yunxi|kyoko|otoya|nanami|yuna|sunhi|luciana|joana|francisca|thomas|amelie|amélie|audrey|henri|denise|alice|luca|elsa|diego/i;
 
     let best = matching[0];
     let bestScore = -999;

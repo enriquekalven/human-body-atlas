@@ -307,6 +307,14 @@ const LAYER_LABELS_BY_LANG = {
     organs: '内脏器官系统',
     nerves: '神经系统'
   },
+  yue: {
+    skin: '皮膚與體表',
+    muscles: '肌肉系統',
+    skeleton: '骨骼系統',
+    vessels: '心血管系統',
+    organs: '內臟器官系統',
+    nerves: '神經系統'
+  },
   ja: {
     skin: '外皮系・体表',
     muscles: '筋系',
@@ -353,6 +361,7 @@ const LAYER_FALLBACK_BY_LANG = {
   en: 'Anatomy',
   es: 'Anatomía',
   zh: '解剖结构',
+  yue: '解剖結構',
   ja: '解剖構造',
   ko: '해부학 구조',
   pt: 'Anatomia',
@@ -373,7 +382,7 @@ function foldAccents(s) {
     .toLowerCase();
 }
 
-const NON_EN_LANGS = ['es', 'zh', 'ja', 'ko', 'pt', 'fr', 'it'];
+const NON_EN_LANGS = ['es', 'zh', 'yue', 'ja', 'ko', 'pt', 'fr', 'it'];
 
 function buildTranslatedRecord(baseName) {
   const namesByLang = { en: baseName };

@@ -10,6 +10,7 @@ export const VOICE_CONFIG = {
   en: { languageCode: 'en-US', name: 'en-US-Chirp3-HD-Aoede' },
   es: { languageCode: 'es-US', name: 'es-US-Chirp3-HD-Aoede' },
   zh: { languageCode: 'cmn-CN', name: 'cmn-CN-Chirp3-HD-Aoede' },
+  yue: { languageCode: 'yue-HK', name: 'yue-HK-Chirp3-HD-Aoede' },
   ja: { languageCode: 'ja-JP', name: 'ja-JP-Chirp3-HD-Aoede' },
   ko: { languageCode: 'ko-KR', name: 'ko-KR-Chirp3-HD-Aoede' },
   pt: { languageCode: 'pt-BR', name: 'pt-BR-Chirp3-HD-Aoede' },
@@ -25,6 +26,7 @@ const DEGREE_WORD = {
   fr: ' degrés',
   it: ' gradi',
   zh: '度',
+  yue: '度',
   ja: '度',
   ko: '도'
 };
@@ -32,13 +34,14 @@ const IT_ORDINALS = { 1: 'primo', 2: 'secondo', 3: 'terzo', 4: 'quarto', 5: 'qui
 
 function joinRange(a, b, lang) {
   if (lang === 'zh') return `${a}到${b}`;
+  if (lang === 'yue') return `${a}至${b}`;
   if (lang === 'ja') return `${a}から${b}`;
   if (lang === 'ko') return `${a}에서 ${b}`;
   return `${a} ${RANGE_WORD[lang] || RANGE_WORD.en} ${b}`;
 }
 
 export function getTitleSeparator(lang = 'en') {
-  return lang === 'zh' || lang === 'ja' ? '。' : '. ';
+  return lang === 'zh' || lang === 'yue' || lang === 'ja' ? '。' : '. ';
 }
 
 /**
@@ -71,8 +74,66 @@ export function buildTissueNarrationText(
   return `${displayTitle}${sep}${body}`;
 }
 
-export function prepareStudioText(cleanedText, _lang = 'en') {
-  return String(cleanedText || '');
+export function prepareStudioText(cleanedText, lang = 'en') {
+  const s = String(cleanedText || '').trim();
+  if (!s) return '';
+  const isCjk = lang === 'zh' || lang === 'yue' || lang === 'ja';
+  const maxLen = isCjk ? 45 : 140;
+
+  // Convert semicolons and colons into sentence boundaries for Chirp 3 HD
+  const normalized = isCjk
+    ? s.replace(/[；;：:]+/g, '。').replace(/。{2,}/g, '。')
+    : s.replace(/\s*[;:]\s*/g, '. ').replace(/\.\s*\./g, '.');
+
+  const rawSentences = isCjk
+    ? normalized.split(/(?<=[。！？!?])\s*/u).filter(Boolean)
+    : normalized.split(/(?<=[.!?。！？])\s+/u).filter(Boolean);
+
+  const outSentences = [];
+  for (const sent of rawSentences) {
+    if (sent.length <= maxLen) {
+      outSentences.push(sent);
+      continue;
+    }
+    // Split long sentence on commas/pauses and group up to maxLen
+    const clauses = isCjk
+      ? sent.split(/(?<=[，、,])\s*/u).filter(Boolean)
+      : sent.split(/(?<=,)\s+/u).filter(Boolean);
+    let acc = '';
+    for (const rawCl of clauses) {
+      // If a single clause without commas is still longer than maxLen, slice it safely
+      const subClauses = [];
+      if (rawCl.length > maxLen && isCjk) {
+        for (let i = 0; i < rawCl.length; i += maxLen) {
+          subClauses.push(rawCl.slice(i, i + maxLen));
+        }
+      } else {
+        subClauses.push(rawCl);
+      }
+      for (const cl of subClauses) {
+        const candidate = acc ? (isCjk ? `${acc}${cl}` : `${acc} ${cl}`) : cl;
+        if (candidate.length <= maxLen) {
+          acc = candidate;
+        } else {
+          if (acc) {
+            const trimmedAcc = acc.replace(/[，、,\s。！？.!?]+$/u, '');
+            if (trimmedAcc) outSentences.push(`${trimmedAcc}${isCjk ? '。' : '.'}`);
+          }
+          acc = cl;
+        }
+      }
+    }
+    if (acc) {
+      const trimmedAcc = acc.replace(/[，、,\s]+$/u, '');
+      if (trimmedAcc) {
+        outSentences.push(
+          /[。！？.!?]$/u.test(trimmedAcc) ? trimmedAcc : `${trimmedAcc}${isCjk ? '。' : '.'}`
+        );
+      }
+    }
+  }
+
+  return isCjk ? outSentences.join('') : outSentences.join(' ').replace(/\s{2,}/g, ' ').trim();
 }
 
 /**
@@ -124,7 +185,7 @@ export function cleanTextForTts(rawText, lang = 'en') {
   s = s.replace(/（(?:FMA|TA98)[^）]*）/gi, '');
 
   // 3. Strip any inline syllable-hyphenated pronunciation guides if present
-  s = s.replace(/(?:Say it|Cómo se dice|Pronúncia|Prononciation|Pronuncia|読み方|발음|发音提示)\s*[:：]\s*["“«「『][^"”»」』]+["”»」』]/gi, '');
+  s = s.replace(/(?:Say it|Cómo se dice|Pronúncia|Prononciation|Pronuncia|読み方|발음|发音提示|發音提示)\s*[:：]\s*["“«「『][^"”»」』]+["”»」』]/gi, '');
 
   // 4a. Numeric ranges ("1–7", "15°–30°", "V1–V4", "300~500") read as "1 to 7", never as a pause
   s = s.replace(
@@ -140,7 +201,7 @@ export function cleanTextForTts(rawText, lang = 'en') {
   s = s.replace(/(\d)\s*°(?!\s*C\b)/g, (_m, d) => `${d}${DEGREE_WORD[lang] || DEGREE_WORD.en}`);
 
   // 4. Replace arrows and dashes with natural pauses
-  const pauseSep = lang === 'zh' || lang === 'ja' ? '、' : ', ';
+  const pauseSep = lang === 'zh' || lang === 'yue' || lang === 'ja' ? '、' : ', ';
   s = s.replace(/\s*[→↔]\s*/g, pauseSep);
   s = s.replace(/\s*[—–]\s*/g, pauseSep);
 
@@ -185,6 +246,43 @@ export function cleanTextForTts(rawText, lang = 'en') {
       .replace(/\bbpm\b/gi, '次每分钟')
       .replace(/×\s*(\d+)/g, '乘$1')
       // Natural punctuation for both device voices and Chirp (studio segmentation is separate)
+      .replace(/[“”"‘’「」『』·]/g, '')
+      .replace(/(?<=\p{Script=Han})\/(?=\p{Script=Han})/gu, '、')
+      .replace(/[（(]/g, '，')
+      .replace(/[）)]/g, '，')
+      .replace(/,/g, '，')
+      .replace(/;/g, '；')
+      .replace(/:/g, '：')
+      .replace(/!/g, '！')
+      .replace(/\?/g, '？')
+      .replace(/\.(?!\d)/g, '。')
+      .replace(/\s+/g, ' ')
+      .replace(/(?<=[\p{Script=Han}，。、；：！？])\s+/gu, '')
+      .replace(/\s+(?=[\p{Script=Han}，。、；：！？])/gu, '')
+      .replace(/[，、；：]+(?=[。！？])/g, '')
+      .replace(/([。！？])[，、；：]+/g, '$1')
+      .replace(/[，、]{2,}/g, '，')
+      .replace(/^[，、；：。]+/, '');
+    return s.trim();
+  } else if (lang === 'yue') {
+    s = s
+      .replace(/[≈~]\s*/g, '約')
+      .replace(/°C\b/g, '攝氏度')
+      .replace(/\bmmHg\b/g, '毫米汞柱')
+      .replace(/\bmL\/min\b/g, '毫升每分鐘')
+      .replace(/\bL\/min\b/g, '升每分鐘')
+      .replace(/\bmL\/d(?:ay)?\b/gi, '毫升每日')
+      .replace(/(\d)\s*mL\b/g, '$1毫升')
+      .replace(/\bmL\b/g, '毫升')
+      .replace(/(\d)\s*L\b/g, '$1升')
+      .replace(/\bcm³\b/g, '立方厘米')
+      .replace(/\bcm²\b/g, '平方厘米')
+      .replace(/\bm²\b/g, '平方米')
+      .replace(/(\d)\s*cm\b/g, '$1厘米')
+      .replace(/(\d)\s*mm\b/g, '$1毫米')
+      .replace(/(\d)\s*kg\b/g, '$1千克')
+      .replace(/\bbpm\b/gi, '次每分鐘')
+      .replace(/×\s*(\d+)/g, '乘$1')
       .replace(/[“”"‘’「」『』·]/g, '')
       .replace(/(?<=\p{Script=Han})\/(?=\p{Script=Han})/gu, '、')
       .replace(/[（(]/g, '，')
@@ -342,14 +440,14 @@ export function splitTextIntoByteChunks(text, lang = 'en', maxBytes = 4500) {
   if (utf8ByteLength(s) <= maxBytes) return [s];
 
   const sentenceRegex =
-    lang === 'ja' || lang === 'zh'
+    lang === 'ja' || lang === 'zh' || lang === 'yue'
       ? /(?<=[。！？!?])\s*/u
       : /(?<=[.!?。！？])\s+/u;
 
   const sentences = s.split(sentenceRegex).filter(Boolean);
   const chunks = [];
   let current = '';
-  const joiner = lang === 'ja' || lang === 'zh' ? '' : ' ';
+  const joiner = lang === 'ja' || lang === 'zh' || lang === 'yue' ? '' : ' ';
 
   const pushOrSplitSentence = (sent) => {
     if (utf8ByteLength(sent) <= maxBytes) {
